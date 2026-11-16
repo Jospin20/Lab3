@@ -15,15 +15,15 @@ namespace VitalCheck.Controllers
     public class AssessmentController
     {
         /// <summary>
-        /// Computes diagnostic metrics (BMI, Category, and Rule-based recommendations) in memory
+        /// Computes diagnostic metrics (BMI, Category, BMR, TDEE, and Rule-based recommendations) in memory
         /// before committing to the database, allowing live previews in the UI.
         /// </summary>
-        public Assessment CalculateDiagnostic(int clientId, int age, decimal heightCm, decimal weightKg,
+        public Assessment CalculateDiagnostic(int clientId, int age, decimal heightCm, decimal weightKg, string sex,
                                               string activityLevel, decimal sleepHours, decimal waterIntake)
         {
             decimal bmi = Assessment.CalculateBMI(weightKg, heightCm);
             string category = Assessment.DetermineBMICategory(bmi, age);
-            string feedback = Assessment.GenerateWellnessFeedback(age, bmi, category, activityLevel, sleepHours, waterIntake);
+            string feedback = Assessment.GenerateWellnessFeedback(age, heightCm, weightKg, sex, bmi, category, activityLevel, sleepHours, waterIntake);
 
             return new Assessment(
                 assessmentId: 0,
@@ -41,9 +41,17 @@ namespace VitalCheck.Controllers
             );
         }
 
+        // Backward-compatible overload
+        public Assessment CalculateDiagnostic(int clientId, int age, decimal heightCm, decimal weightKg,
+                                              string activityLevel, decimal sleepHours, decimal waterIntake)
+        {
+            return CalculateDiagnostic(clientId, age, heightCm, weightKg, "Male", activityLevel, sleepHours, waterIntake);
+        }
+
         /// <summary>
         /// Validates and saves an assessment record into the database.
-        /// Also updates the client's profile with their current height and weight.
+        /// Also updates the client's profile with their current height and weight,
+        /// and synchronizes active weight-related fitness goals.
         /// </summary>
         public bool SaveAssessment(Assessment assessment, out string errorMessage)
         {
@@ -125,6 +133,20 @@ namespace VitalCheck.Controllers
                     };
 
                     DatabaseHelper.ExecuteNonQuery(updateProfileSql, syncParams);
+
+                    // 3. Automatically synchronize active weight-related goals
+                    string syncGoalsSql = @"
+                        UPDATE FitnessGoals
+                        SET CurrentValue = @Weight
+                        WHERE ClientID = @ClientID AND Status = 'In Progress' AND LOWER(Unit) = 'kg'";
+
+                    SqlParameter[] syncGoalParams = {
+                        new SqlParameter("@ClientID", assessment.ClientID),
+                        new SqlParameter("@Weight", assessment.Weight)
+                    };
+
+                    DatabaseHelper.ExecuteNonQuery(syncGoalsSql, syncGoalParams);
+
                     return true;
                 }
 
