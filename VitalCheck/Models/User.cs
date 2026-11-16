@@ -17,6 +17,7 @@ namespace VitalCheck.Models
 
         // Convenient check for role-based navigation and permissions
         public bool IsInstructor => string.Equals(UserRole, "Instructor", StringComparison.OrdinalIgnoreCase);
+        public bool IsIndividual => string.Equals(UserRole, "Individual", StringComparison.OrdinalIgnoreCase);
 
         // Parameterless constructor (required for serialization and manual property setting)
         public User()
