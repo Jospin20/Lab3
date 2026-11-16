@@ -17,25 +17,24 @@ namespace VitalCheck.Views
         private readonly User _instructorUser;
         private readonly ClientController _clientController;
 
-        // Header
+        // Container Panels
         private Panel pnlHeader;
-        private Label lblTitle;
-        private Label lblSubtitle;
+        private TableLayoutPanel pnlGrid;
+        private Panel pnlTableCard;
+        private Panel pnlFormCard;
 
-        // Search Bar
+        // Search Bar Controls
         private TextBox txtSearch;
         private Button btnSearch;
         private Button btnClearSearch;
 
-        // Client Table
-        private Panel pnlGridContainer;
+        // Table & Action Controls
         private DataGridView dgvClients;
         private Button btnSetActiveClient;
         private Button btnEditClient;
         private Button btnDeleteClient;
 
-        // Add / Edit Form
-        private Panel pnlForm;
+        // Form Controls
         private Label lblFormTitle;
         private TextBox txtFullName;
         private NumericUpDown numAge;
@@ -49,7 +48,6 @@ namespace VitalCheck.Views
         private int _editingClientId = 0;
         private List<ClientProfile> _clients = new List<ClientProfile>();
 
-        // Event to notify MainDashboardForm when active client changes
         [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public Action<ClientProfile>? OnActiveClientChanged { get; set; }
 
@@ -68,32 +66,33 @@ namespace VitalCheck.Views
             this.BackColor = Color.FromArgb(248, 250, 252);
             this.Font = new Font("Segoe UI", 10F);
             this.AutoScroll = true;
-            this.Padding = new Padding(25);
+            this.Padding = new Padding(25, 20, 25, 25);
 
-            // 1. Header
+            // 1. Top Header Banner
             pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
+                Height = 75,
                 BackColor = Color.White,
-                Padding = new Padding(20, 12, 20, 10)
+                Padding = new Padding(24, 14, 24, 12),
+                Margin = new Padding(0, 0, 0, 16)
             };
 
-            lblTitle = new Label
+            Label lblTitle = new Label
             {
-                Text = "Client Management Directory",
-                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+                Text = "Client Directory & Management",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(15, 10),
+                Location = new Point(20, 12),
                 AutoSize = true
             };
 
-            lblSubtitle = new Label
+            Label lblSubtitle = new Label
             {
-                Text = "Register clients, manage profiles, and select an active client for diagnostics.",
+                Text = "Register clients, update demographic information, and switch active subjects.",
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(13, 148, 136),
-                Location = new Point(15, 40),
+                Location = new Point(22, 42),
                 AutoSize = true
             };
 
@@ -101,126 +100,68 @@ namespace VitalCheck.Views
             pnlHeader.Controls.Add(lblSubtitle);
             this.Controls.Add(pnlHeader);
 
-            // 2. Add / Edit Client Form (Right panel)
-            pnlForm = new Panel
+            // 2. Responsive 2-Column Split: Table (60%) on Left, Add/Edit Form (40%) on Right
+            pnlGrid = new TableLayoutPanel
             {
-                Location = new Point(625, 100),
-                Size = new Size(340, 520),
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Padding = new Padding(0, 12, 0, 0)
+            };
+            pnlGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62F));
+            pnlGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38F));
+
+            // Left Table Card
+            pnlTableCard = new Panel
+            {
+                Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Padding = new Padding(20)
+                Padding = new Padding(22),
+                Margin = new Padding(0, 0, 12, 0)
             };
+            BuildTableCard();
 
-            lblFormTitle = new Label
+            // Right Form Card
+            pnlFormCard = new Panel
             {
-                Text = "Register New Client",
-                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(15, 15),
-                AutoSize = true
-            };
-
-            int formY = 55;
-            int step = 60;
-
-            // Full Name
-            Label lblName = new Label { Text = "Client Full Name:", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            txtFullName = new TextBox { Location = new Point(15, formY + 22), Width = 300, Font = new Font("Segoe UI", 10F) };
-
-            // Age
-            formY += step;
-            Label lblAge = new Label { Text = "Age (Years):", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            numAge = new NumericUpDown { Location = new Point(15, formY + 22), Width = 140, Minimum = 5, Maximum = 120, Value = 28 };
-
-            // Sex
-            Label lblSex = new Label { Text = "Biological Sex:", Location = new Point(175, formY), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            cmbSex = new ComboBox { Location = new Point(175, formY + 22), Width = 140, DropDownStyle = ComboBoxStyle.DropDownList };
-            cmbSex.Items.AddRange(new object[] { "Male", "Female", "Other" });
-            cmbSex.SelectedIndex = 0;
-
-            // Height
-            formY += step;
-            Label lblHeight = new Label { Text = "Height (cm):", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            numHeight = new NumericUpDown { Location = new Point(15, formY + 22), Width = 140, Minimum = 50, Maximum = 260, DecimalPlaces = 1, Value = 175.0m };
-
-            // Weight
-            Label lblWeight = new Label { Text = "Weight (kg):", Location = new Point(175, formY), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            numWeight = new NumericUpDown { Location = new Point(175, formY + 22), Width = 140, Minimum = 20, Maximum = 350, DecimalPlaces = 1, Value = 72.0m };
-
-            // Buttons
-            formY += step + 20;
-            btnSaveClient = new Button
-            {
-                Text = "Save Client",
-                Location = new Point(15, formY),
-                Size = new Size(180, 42),
-                BackColor = Color.FromArgb(13, 148, 136),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnSaveClient.FlatAppearance.BorderSize = 0;
-            btnSaveClient.Click += BtnSaveClient_Click;
-
-            btnCancelEdit = new Button
-            {
-                Text = "Clear",
-                Location = new Point(205, formY),
-                Size = new Size(110, 42),
-                BackColor = Color.FromArgb(226, 232, 240),
-                ForeColor = Color.FromArgb(51, 65, 85),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnCancelEdit.FlatAppearance.BorderSize = 0;
-            btnCancelEdit.Click += (s, e) => ResetForm();
-
-            lblFormMessage = new Label
-            {
-                Location = new Point(15, formY + 50),
-                Size = new Size(300, 40),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Text = ""
-            };
-
-            pnlForm.Controls.Add(lblFormTitle);
-            pnlForm.Controls.Add(lblName);
-            pnlForm.Controls.Add(txtFullName);
-            pnlForm.Controls.Add(lblAge);
-            pnlForm.Controls.Add(numAge);
-            pnlForm.Controls.Add(lblSex);
-            pnlForm.Controls.Add(cmbSex);
-            pnlForm.Controls.Add(lblHeight);
-            pnlForm.Controls.Add(numHeight);
-            pnlForm.Controls.Add(lblWeight);
-            pnlForm.Controls.Add(numWeight);
-            pnlForm.Controls.Add(btnSaveClient);
-            pnlForm.Controls.Add(btnCancelEdit);
-            pnlForm.Controls.Add(lblFormMessage);
-            this.Controls.Add(pnlForm);
-
-            // 3. Client Grid Container (Left panel)
-            pnlGridContainer = new Panel
-            {
-                Location = new Point(25, 100),
-                Size = new Size(580, 520),
+                Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Padding = new Padding(20)
+                Padding = new Padding(22),
+                Margin = new Padding(12, 0, 0, 0),
+                AutoScroll = true
+            };
+            BuildFormCard();
+
+            pnlGrid.Controls.Add(pnlTableCard, 0, 0);
+            pnlGrid.Controls.Add(pnlFormCard, 1, 0);
+
+            this.Controls.Add(pnlGrid);
+            pnlGrid.BringToFront();
+        }
+
+        private void BuildTableCard()
+        {
+            // Search strip
+            Panel pnlSearch = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 44,
+                Padding = new Padding(0)
             };
 
-            Label lblSearch = new Label { Text = "Search Clients:", Location = new Point(15, 18), AutoSize = true, ForeColor = Color.FromArgb(51, 65, 85) };
-            txtSearch = new TextBox { Location = new Point(115, 15), Width = 230, PlaceholderText = "Search by client name..." };
+            Label lblSearch = new Label { Text = "Search Clients:", Location = new Point(0, 10), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            txtSearch = new TextBox { Location = new Point(100, 7), Width = 230, Font = new Font("Segoe UI", 9.5F), PlaceholderText = "Search by client name..." };
             txtSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) LoadClients(); };
 
             btnSearch = new Button
             {
                 Text = "Search",
-                Location = new Point(355, 14),
-                Size = new Size(80, 30),
+                Location = new Point(340, 6),
+                Size = new Size(80, 28),
                 BackColor = Color.FromArgb(2, 132, 199),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnSearch.FlatAppearance.BorderSize = 0;
@@ -229,19 +170,88 @@ namespace VitalCheck.Views
             btnClearSearch = new Button
             {
                 Text = "Reset",
-                Location = new Point(445, 14),
-                Size = new Size(70, 30),
-                BackColor = Color.FromArgb(226, 232, 240),
+                Location = new Point(428, 6),
+                Size = new Size(70, 28),
+                BackColor = Color.FromArgb(241, 245, 249),
+                ForeColor = Color.FromArgb(51, 65, 85),
                 FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9F),
                 Cursor = Cursors.Hand
             };
             btnClearSearch.FlatAppearance.BorderSize = 0;
             btnClearSearch.Click += (s, e) => { txtSearch.Clear(); LoadClients(); };
 
+            pnlSearch.Controls.Add(lblSearch);
+            pnlSearch.Controls.Add(txtSearch);
+            pnlSearch.Controls.Add(btnSearch);
+            pnlSearch.Controls.Add(btnClearSearch);
+            pnlTableCard.Controls.Add(pnlSearch);
+
+            // Action Buttons Bar below table
+            Panel pnlActions = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 55,
+                Padding = new Padding(0, 10, 0, 0)
+            };
+
+            btnSetActiveClient = new Button
+            {
+                Text = "★ Set as Active Client",
+                Dock = DockStyle.Left,
+                Width = 200,
+                BackColor = Color.FromArgb(13, 148, 136),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnSetActiveClient.FlatAppearance.BorderSize = 0;
+            btnSetActiveClient.Click += BtnSetActiveClient_Click;
+
+            Panel sep1 = new Panel { Dock = DockStyle.Left, Width = 14 };
+
+            btnEditClient = new Button
+            {
+                Text = "✎ Edit Profile",
+                Dock = DockStyle.Left,
+                Width = 140,
+                BackColor = Color.FromArgb(2, 132, 199),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnEditClient.FlatAppearance.BorderSize = 0;
+            btnEditClient.Click += BtnEditClient_Click;
+
+            Panel sep2 = new Panel { Dock = DockStyle.Left, Width = 14 };
+
+            btnDeleteClient = new Button
+            {
+                Text = "🗑 Delete",
+                Dock = DockStyle.Left,
+                Width = 110,
+                BackColor = Color.FromArgb(239, 68, 68),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnDeleteClient.FlatAppearance.BorderSize = 0;
+            btnDeleteClient.Click += BtnDeleteClient_Click;
+
+            pnlActions.Controls.Add(btnDeleteClient);
+            pnlActions.Controls.Add(sep2);
+            pnlActions.Controls.Add(btnEditClient);
+            pnlActions.Controls.Add(sep1);
+            pnlActions.Controls.Add(btnSetActiveClient);
+            pnlTableCard.Controls.Add(pnlActions);
+
+            // DataGridView
             dgvClients = new DataGridView
             {
-                Location = new Point(15, 55),
-                Size = new Size(550, 400),
+                Dock = DockStyle.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 RowHeadersVisible = false,
@@ -256,61 +266,101 @@ namespace VitalCheck.Views
             dgvClients.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 23, 42);
             dgvClients.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvClients.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dgvClients.ColumnHeadersHeight = 32;
-            dgvClients.RowTemplate.Height = 30;
+            dgvClients.ColumnHeadersHeight = 36;
+            dgvClients.RowTemplate.Height = 32;
 
-            // Action Buttons
-            btnSetActiveClient = new Button
+            pnlTableCard.Controls.Add(dgvClients);
+            dgvClients.BringToFront();
+        }
+
+        private void BuildFormCard()
+        {
+            lblFormTitle = new Label
             {
-                Text = "★ Select as Active Client",
-                Location = new Point(15, 465),
-                Size = new Size(210, 38),
+                Text = "Register New Client",
+                Font = new Font("Segoe UI", 12.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Location = new Point(15, 12),
+                AutoSize = true
+            };
+            pnlFormCard.Controls.Add(lblFormTitle);
+
+            int formY = 48;
+            int step = 60;
+
+            // Full Name
+            Label lblName = new Label { Text = "Client Full Name:", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            txtFullName = new TextBox { Location = new Point(15, formY + 22), Width = 310, Font = new Font("Segoe UI", 10F), PlaceholderText = "e.g., Emily Davies" };
+
+            // Age & Sex
+            formY += step;
+            Label lblAge = new Label { Text = "Age (Years):", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            numAge = new NumericUpDown { Location = new Point(15, formY + 22), Width = 145, Minimum = 5, Maximum = 120, Value = 28, Font = new Font("Segoe UI", 10F) };
+
+            Label lblSex = new Label { Text = "Biological Sex:", Location = new Point(175, formY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cmbSex = new ComboBox { Location = new Point(175, formY + 22), Width = 150, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
+            cmbSex.Items.AddRange(new object[] { "Male", "Female", "Other" });
+            cmbSex.SelectedIndex = 0;
+
+            // Height & Weight
+            formY += step;
+            Label lblHeight = new Label { Text = "Height (cm):", Location = new Point(15, formY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            numHeight = new NumericUpDown { Location = new Point(15, formY + 22), Width = 145, Minimum = 50, Maximum = 260, DecimalPlaces = 1, Value = 175.0m, Font = new Font("Segoe UI", 10F) };
+
+            Label lblWeight = new Label { Text = "Weight (kg):", Location = new Point(175, formY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            numWeight = new NumericUpDown { Location = new Point(175, formY + 22), Width = 150, Minimum = 20, Maximum = 350, DecimalPlaces = 1, Value = 72.0m, Font = new Font("Segoe UI", 10F) };
+
+            // Buttons
+            formY += step + 20;
+            btnSaveClient = new Button
+            {
+                Text = "Save Client Record",
+                Location = new Point(15, formY),
+                Size = new Size(190, 42),
                 BackColor = Color.FromArgb(13, 148, 136),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
-            btnSetActiveClient.FlatAppearance.BorderSize = 0;
-            btnSetActiveClient.Click += BtnSetActiveClient_Click;
+            btnSaveClient.FlatAppearance.BorderSize = 0;
+            btnSaveClient.Click += BtnSaveClient_Click;
 
-            btnEditClient = new Button
+            btnCancelEdit = new Button
             {
-                Text = "Edit Profile",
-                Location = new Point(235, 465),
-                Size = new Size(130, 38),
-                BackColor = Color.FromArgb(2, 132, 199),
-                ForeColor = Color.White,
+                Text = "Clear",
+                Location = new Point(215, formY),
+                Size = new Size(110, 42),
+                BackColor = Color.FromArgb(241, 245, 249),
+                ForeColor = Color.FromArgb(51, 65, 85),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
-            btnEditClient.FlatAppearance.BorderSize = 0;
-            btnEditClient.Click += BtnEditClient_Click;
+            btnCancelEdit.FlatAppearance.BorderSize = 0;
+            btnCancelEdit.Click += (s, e) => ResetForm();
 
-            btnDeleteClient = new Button
+            lblFormMessage = new Label
             {
-                Text = "Delete Client",
-                Location = new Point(375, 465),
-                Size = new Size(130, 38),
-                BackColor = Color.FromArgb(239, 68, 68),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Location = new Point(15, formY + 50),
+                Size = new Size(310, 40),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Text = ""
             };
-            btnDeleteClient.FlatAppearance.BorderSize = 0;
-            btnDeleteClient.Click += BtnDeleteClient_Click;
 
-            pnlGridContainer.Controls.Add(lblSearch);
-            pnlGridContainer.Controls.Add(txtSearch);
-            pnlGridContainer.Controls.Add(btnSearch);
-            pnlGridContainer.Controls.Add(btnClearSearch);
-            pnlGridContainer.Controls.Add(dgvClients);
-            pnlGridContainer.Controls.Add(btnSetActiveClient);
-            pnlGridContainer.Controls.Add(btnEditClient);
-            pnlGridContainer.Controls.Add(btnDeleteClient);
-            this.Controls.Add(pnlGridContainer);
+            pnlFormCard.Controls.Add(lblName);
+            pnlFormCard.Controls.Add(txtFullName);
+            pnlFormCard.Controls.Add(lblAge);
+            pnlFormCard.Controls.Add(numAge);
+            pnlFormCard.Controls.Add(lblSex);
+            pnlFormCard.Controls.Add(cmbSex);
+            pnlFormCard.Controls.Add(lblHeight);
+            pnlFormCard.Controls.Add(numHeight);
+            pnlFormCard.Controls.Add(lblWeight);
+            pnlFormCard.Controls.Add(numWeight);
+            pnlFormCard.Controls.Add(btnSaveClient);
+            pnlFormCard.Controls.Add(btnCancelEdit);
+            pnlFormCard.Controls.Add(lblFormMessage);
         }
 
         private void LoadClients()
@@ -322,7 +372,7 @@ namespace VitalCheck.Views
             dgvClients.AutoGenerateColumns = false;
 
             dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "ClientID", HeaderText = "ID", DataPropertyName = "ClientID", Visible = false });
-            dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "FullName", HeaderText = "Client Name", DataPropertyName = "FullName", FillWeight = 140 });
+            dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "FullName", HeaderText = "Client Full Name", DataPropertyName = "FullName", FillWeight = 150 });
             dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "Age", HeaderText = "Age", DataPropertyName = "Age", FillWeight = 50 });
             dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sex", HeaderText = "Sex", DataPropertyName = "Sex", FillWeight = 60 });
             dgvClients.Columns.Add(new DataGridViewTextBoxColumn { Name = "Height", HeaderText = "Height", DataPropertyName = "Height", FillWeight = 70 });
@@ -430,7 +480,7 @@ namespace VitalCheck.Views
             if (client != null)
             {
                 OnActiveClientChanged?.Invoke(client);
-                MessageBox.Show($"Active client switched to: {client.FullName}\r\nHealth assessments and fitness goals are now targeted to this client.",
+                MessageBox.Show($"Active subject switched to: {client.FullName}\r\nHealth assessments and fitness goals are now targeted to this client.",
                                 "Active Client Set", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -485,12 +535,13 @@ namespace VitalCheck.Views
         {
             _editingClientId = 0;
             lblFormTitle.Text = "Register New Client";
-            btnSaveClient.Text = "Save Client";
+            btnSaveClient.Text = "Save Client Record";
             txtFullName.Clear();
             numAge.Value = 28;
             cmbSex.SelectedIndex = 0;
             numHeight.Value = 175.0m;
             numWeight.Value = 72.0m;
+            lblFormMessage.Text = "";
         }
     }
 }
