@@ -8,8 +8,8 @@ using VitalCheck.Models;
 namespace VitalCheck.Views
 {
     /// <summary>
-    /// GoalsControl provides the user interface for establishing personal or client fitness goals,
-    /// tracking current progress, managing deadlines, and marking goals completed.
+    /// GoalsControl allows users and instructors to create, update,
+    /// track, and complete fitness goals using standard Windows Forms controls.
     /// </summary>
     public class GoalsControl : UserControl
     {
@@ -17,23 +17,32 @@ namespace VitalCheck.Views
         private readonly ClientProfile? _activeClient;
         private readonly GoalController _goalController;
 
-        // Container Panels
-        private Panel pnlHeader;
-        private Panel pnlNewGoalCard;
-        private Panel pnlGridCard;
+        // GroupBoxes
+        private GroupBox grpAddGoal;
+        private GroupBox grpGoalList;
 
-        // Create Goal Form Inputs
+        // Add Goal Inputs
+        private Label lblDesc;
         private TextBox txtDescription;
+        private Label lblCurrent;
         private NumericUpDown numCurrentVal;
+        private Label lblTarget;
         private NumericUpDown numTargetVal;
+        private Label lblUnit;
         private ComboBox cmbUnit;
+        private Label lblTargetDate;
         private DateTimePicker dtpTargetDate;
         private Button btnAddGoal;
-        private Label lblGoalMsg;
+        private Label lblAddStatus;
 
-        // Grid & Filter Controls
+        // Goal List & Management
+        private Label lblFilter;
         private ComboBox cmbStatusFilter;
         private DataGridView dgvGoals;
+
+        // Update actions
+        private Label lblUpdatePrompt;
+        private NumericUpDown numUpdateProgress;
         private Button btnUpdateProgress;
         private Button btnMarkCompleted;
         private Button btnDeleteGoal;
@@ -51,372 +60,305 @@ namespace VitalCheck.Views
         private void InitializeComponent()
         {
             this.Dock = DockStyle.Fill;
-            this.BackColor = Color.FromArgb(248, 250, 252);
-            this.Font = new Font("Segoe UI", 10F);
+            this.BackColor = Color.FromArgb(245, 247, 250);
+            this.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
             this.AutoScroll = true;
-            this.Padding = new Padding(25, 20, 25, 25);
 
-            // 1. Top Header Banner (DPI-Safe Container)
-            pnlHeader = new Panel
+            int leftMargin = 20;
+            int curY = 15;
+
+            // 1. Add Goal GroupBox (Top)
+            grpAddGoal = new GroupBox
             {
-                Dock = DockStyle.Top,
-                Height = 84,
-                BackColor = Color.White,
-                Padding = new Padding(24, 16, 24, 14),
-                Margin = new Padding(0, 0, 0, 16)
+                Text = " Create New Fitness Goal ",
+                Location = new Point(leftMargin, curY),
+                Size = new Size(880, 140),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 41, 59)
             };
 
-            FlowLayoutPanel pnlHeaderFlow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
-                BackColor = Color.Transparent
-            };
-
-            Label lblTitle = new Label
-            {
-                Text = "Fitness Goals & Milestones",
-                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                AutoSize = true,
-                Margin = new Padding(0, 0, 0, 4)
-            };
-
-            string sub = _activeClient != null
-                ? $"Managing Goals for: {_activeClient.FullName}"
-                : "No active client selected.";
-
-            Label lblSubtitle = new Label
-            {
-                Text = sub,
-                Font = new Font("Segoe UI", 9.5F),
-                ForeColor = Color.FromArgb(13, 148, 136),
-                AutoSize = true,
-                Margin = new Padding(0)
-            };
-
-            pnlHeaderFlow.Controls.Add(lblTitle);
-            pnlHeaderFlow.Controls.Add(lblSubtitle);
-            pnlHeader.Controls.Add(pnlHeaderFlow);
-            this.Controls.Add(pnlHeader);
-
-            // 2. Add New Goal Card
-            pnlNewGoalCard = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 145,
-                BackColor = Color.White,
-                Padding = new Padding(22, 16, 22, 16),
-                Margin = new Padding(0, 14, 0, 14)
-            };
-            BuildNewGoalCard();
-            this.Controls.Add(pnlNewGoalCard);
-
-            // 3. Grid Container Card
-            pnlGridCard = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(22),
-                Margin = new Padding(0, 14, 0, 0)
-            };
-            BuildGridCard();
-            this.Controls.Add(pnlGridCard);
-            pnlGridCard.BringToFront();
-        }
-
-        private void BuildNewGoalCard()
-        {
-            Label lblHeading = new Label
-            {
-                Text = "Establish New Fitness Goal",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(15, 10),
-                AutoSize = true
-            };
-            pnlNewGoalCard.Controls.Add(lblHeading);
-
-            int startY = 40;
-
-            // Description
-            Label lblDesc = new Label { Text = "Goal Description:", Location = new Point(15, startY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold) };
-            txtDescription = new TextBox { Location = new Point(15, startY + 20), Width = 310, Font = new Font("Segoe UI", 9.5F), PlaceholderText = "e.g., Reach target weight of 70 kg" };
+            // Goal Description
+            lblDesc = new Label { Text = "Goal Description:", Location = new Point(15, 28), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            txtDescription = new TextBox { Location = new Point(15, 48), Width = 310, Font = new Font("Segoe UI", 9.5F), PlaceholderText = "e.g., Target body weight of 68 kg" };
 
             // Current Value
-            Label lblCurrent = new Label { Text = "Current:", Location = new Point(340, startY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold) };
-            numCurrentVal = new NumericUpDown { Location = new Point(340, startY + 20), Width = 95, Minimum = 0, Maximum = 100000, DecimalPlaces = 1, Value = 75, Font = new Font("Segoe UI", 9.5F) };
+            lblCurrent = new Label { Text = "Current:", Location = new Point(340, 28), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            numCurrentVal = new NumericUpDown { Location = new Point(340, 48), Width = 90, Minimum = 0, Maximum = 100000, DecimalPlaces = 1, Value = 75, Font = new Font("Segoe UI", 9.5F) };
 
             // Target Value
-            Label lblTarget = new Label { Text = "Target:", Location = new Point(450, startY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold) };
-            numTargetVal = new NumericUpDown { Location = new Point(450, startY + 20), Width = 95, Minimum = 0, Maximum = 100000, DecimalPlaces = 1, Value = 70, Font = new Font("Segoe UI", 9.5F) };
+            lblTarget = new Label { Text = "Target:", Location = new Point(445, 28), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            numTargetVal = new NumericUpDown { Location = new Point(445, 48), Width = 90, Minimum = 0, Maximum = 100000, DecimalPlaces = 1, Value = 70, Font = new Font("Segoe UI", 9.5F) };
 
             // Unit
-            Label lblUnit = new Label { Text = "Unit:", Location = new Point(560, startY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold) };
-            cmbUnit = new ComboBox { Location = new Point(560, startY + 20), Width = 110, DropDownStyle = ComboBoxStyle.DropDown, Font = new Font("Segoe UI", 9.5F) };
-            cmbUnit.Items.AddRange(new object[] { "kg", "steps", "hours", "km", "workouts/wk" });
+            lblUnit = new Label { Text = "Unit:", Location = new Point(550, 28), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            cmbUnit = new ComboBox { Location = new Point(550, 48), Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9.5F) };
+            cmbUnit.Items.AddRange(new object[] { "kg", "km", "steps", "hrs", "reps" });
             cmbUnit.SelectedIndex = 0;
 
             // Target Date
-            Label lblDate = new Label { Text = "Target Deadline:", Location = new Point(685, startY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold) };
-            dtpTargetDate = new DateTimePicker { Location = new Point(685, startY + 20), Width = 135, Format = DateTimePickerFormat.Short, Value = DateTime.Today.AddMonths(1), Font = new Font("Segoe UI", 9.5F) };
+            lblTargetDate = new Label { Text = "Target Date:", Location = new Point(645, 28), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            dtpTargetDate = new DateTimePicker { Location = new Point(645, 48), Width = 115, Format = DateTimePickerFormat.Short, Value = DateTime.Today.AddMonths(1), Font = new Font("Segoe UI", 9.5F) };
 
             // Add Button
             btnAddGoal = new Button
             {
-                Text = "+ Add Goal",
-                Location = new Point(835, startY + 18),
-                Size = new Size(115, 32),
+                Text = "Add Goal",
+                Location = new Point(775, 45),
+                Size = new Size(90, 32),
                 BackColor = Color.FromArgb(13, 148, 136),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnAddGoal.FlatAppearance.BorderSize = 0;
             btnAddGoal.Click += BtnAddGoal_Click;
 
-            lblGoalMsg = new Label
+            // Status message
+            lblAddStatus = new Label
             {
-                Location = new Point(15, startY + 58),
-                Size = new Size(800, 25),
-                ForeColor = Color.FromArgb(16, 185, 129),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Location = new Point(15, 88),
+                Size = new Size(850, 30),
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(13, 148, 136),
                 Text = ""
             };
 
-            pnlNewGoalCard.Controls.Add(lblDesc);
-            pnlNewGoalCard.Controls.Add(txtDescription);
-            pnlNewGoalCard.Controls.Add(lblCurrent);
-            pnlNewGoalCard.Controls.Add(numCurrentVal);
-            pnlNewGoalCard.Controls.Add(lblTarget);
-            pnlNewGoalCard.Controls.Add(numTargetVal);
-            pnlNewGoalCard.Controls.Add(lblUnit);
-            pnlNewGoalCard.Controls.Add(cmbUnit);
-            pnlNewGoalCard.Controls.Add(lblDate);
-            pnlNewGoalCard.Controls.Add(dtpTargetDate);
-            pnlNewGoalCard.Controls.Add(btnAddGoal);
-            pnlNewGoalCard.Controls.Add(lblGoalMsg);
-        }
+            grpAddGoal.Controls.Add(lblDesc);
+            grpAddGoal.Controls.Add(txtDescription);
+            grpAddGoal.Controls.Add(lblCurrent);
+            grpAddGoal.Controls.Add(numCurrentVal);
+            grpAddGoal.Controls.Add(lblTarget);
+            grpAddGoal.Controls.Add(numTargetVal);
+            grpAddGoal.Controls.Add(lblUnit);
+            grpAddGoal.Controls.Add(cmbUnit);
+            grpAddGoal.Controls.Add(lblTargetDate);
+            grpAddGoal.Controls.Add(dtpTargetDate);
+            grpAddGoal.Controls.Add(btnAddGoal);
+            grpAddGoal.Controls.Add(lblAddStatus);
 
-        private void BuildGridCard()
-        {
-            Panel pnlTopFilter = new Panel
+            this.Controls.Add(grpAddGoal);
+
+            // 2. Goal List GroupBox (Bottom)
+            curY += 155;
+            grpGoalList = new GroupBox
             {
-                Dock = DockStyle.Top,
-                Height = 42,
-                Padding = new Padding(0)
+                Text = " Goal Progress & Management ",
+                Location = new Point(leftMargin, curY),
+                Size = new Size(880, 440),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 41, 59)
             };
 
-            Label lblGridHeading = new Label
-            {
-                Text = "Current & Past Fitness Goals",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Dock = DockStyle.Left,
-                AutoSize = true
-            };
-
-            Panel pnlRightFilter = new Panel { Dock = DockStyle.Right, Width = 260 };
-            Label lblFilter = new Label { Text = "Status Filter:", Location = new Point(10, 8), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            cmbStatusFilter = new ComboBox { Location = new Point(105, 5), Width = 145, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9.5F) };
-            cmbStatusFilter.Items.AddRange(new object[] { "All", "In Progress", "Completed", "Cancelled" });
+            // Filter
+            lblFilter = new Label { Text = "Filter Status:", Location = new Point(15, 26), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            cmbStatusFilter = new ComboBox { Location = new Point(95, 23), Width = 150, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9F) };
+            cmbStatusFilter.Items.AddRange(new object[] { "All Goals", "In Progress", "Completed" });
             cmbStatusFilter.SelectedIndex = 0;
             cmbStatusFilter.SelectedIndexChanged += (s, e) => LoadGoals();
-            pnlRightFilter.Controls.Add(lblFilter);
-            pnlRightFilter.Controls.Add(cmbStatusFilter);
 
-            pnlTopFilter.Controls.Add(lblGridHeading);
-            pnlTopFilter.Controls.Add(pnlRightFilter);
-            pnlGridCard.Controls.Add(pnlTopFilter);
+            grpGoalList.Controls.Add(lblFilter);
+            grpGoalList.Controls.Add(cmbStatusFilter);
 
-            // Action Buttons Bar below grid
-            Panel pnlActions = new Panel
+            // DataGridView for Goals
+            dgvGoals = new DataGridView
             {
-                Dock = DockStyle.Bottom,
-                Height = 55,
-                Padding = new Padding(0, 10, 0, 0)
+                Location = new Point(15, 60),
+                Size = new Size(850, 310),
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                RowHeadersVisible = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular)
+            };
+            dgvGoals.SelectionChanged += DgvGoals_SelectionChanged;
+
+            // Configure columns
+            dgvGoals.Columns.Add("GoalID", "ID");
+            dgvGoals.Columns["GoalID"].Width = 45;
+            dgvGoals.Columns.Add("Description", "Goal Description");
+            dgvGoals.Columns.Add("Current", "Current");
+            dgvGoals.Columns["Current"].Width = 70;
+            dgvGoals.Columns.Add("Target", "Target");
+            dgvGoals.Columns["Target"].Width = 70;
+            dgvGoals.Columns.Add("Unit", "Unit");
+            dgvGoals.Columns["Unit"].Width = 55;
+            dgvGoals.Columns.Add("TargetDate", "Deadline");
+            dgvGoals.Columns["TargetDate"].Width = 90;
+            dgvGoals.Columns.Add("Status", "Status");
+            dgvGoals.Columns["Status"].Width = 95;
+            dgvGoals.Columns.Add("Progress", "Progress (%)");
+            dgvGoals.Columns["Progress"].Width = 95;
+
+            grpGoalList.Controls.Add(dgvGoals);
+
+            // Bottom action row: update progress / complete / delete
+            int actY = 385;
+
+            lblUpdatePrompt = new Label
+            {
+                Text = "New Value for Selected:",
+                Location = new Point(15, actY + 4),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(51, 65, 85)
+            };
+
+            numUpdateProgress = new NumericUpDown
+            {
+                Location = new Point(160, actY + 1),
+                Width = 90,
+                Minimum = 0,
+                Maximum = 100000,
+                DecimalPlaces = 1,
+                Font = new Font("Segoe UI", 9.5F)
             };
 
             btnUpdateProgress = new Button
             {
-                Text = "✎ Update Current Value",
-                Dock = DockStyle.Left,
-                Width = 200,
-                BackColor = Color.FromArgb(2, 132, 199),
+                Text = "Update Progress",
+                Location = new Point(265, actY),
+                Size = new Size(125, 30),
+                BackColor = Color.FromArgb(13, 148, 136),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnUpdateProgress.FlatAppearance.BorderSize = 0;
             btnUpdateProgress.Click += BtnUpdateProgress_Click;
 
-            Panel sep1 = new Panel { Dock = DockStyle.Left, Width = 15 };
-
             btnMarkCompleted = new Button
             {
-                Text = "★ Mark as Completed",
-                Dock = DockStyle.Left,
-                Width = 190,
-                BackColor = Color.FromArgb(16, 185, 129),
+                Text = "Mark as Completed",
+                Location = new Point(405, actY),
+                Size = new Size(140, 30),
+                BackColor = Color.FromArgb(16, 185, 129), // Green
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnMarkCompleted.FlatAppearance.BorderSize = 0;
             btnMarkCompleted.Click += BtnMarkCompleted_Click;
 
-            Panel sep2 = new Panel { Dock = DockStyle.Left, Width = 15 };
-
             btnDeleteGoal = new Button
             {
-                Text = "🗑 Delete Goal",
-                Dock = DockStyle.Left,
-                Width = 140,
-                BackColor = Color.FromArgb(239, 68, 68),
-                ForeColor = Color.White,
+                Text = "Delete Goal",
+                Location = new Point(560, actY),
+                Size = new Size(100, 30),
+                BackColor = Color.FromArgb(226, 232, 240),
+                ForeColor = Color.FromArgb(220, 38, 38), // Red
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnDeleteGoal.FlatAppearance.BorderSize = 0;
             btnDeleteGoal.Click += BtnDeleteGoal_Click;
 
-            pnlActions.Controls.Add(btnDeleteGoal);
-            pnlActions.Controls.Add(sep2);
-            pnlActions.Controls.Add(btnMarkCompleted);
-            pnlActions.Controls.Add(sep1);
-            pnlActions.Controls.Add(btnUpdateProgress);
-            pnlGridCard.Controls.Add(pnlActions);
+            grpGoalList.Controls.Add(lblUpdatePrompt);
+            grpGoalList.Controls.Add(numUpdateProgress);
+            grpGoalList.Controls.Add(btnUpdateProgress);
+            grpGoalList.Controls.Add(btnMarkCompleted);
+            grpGoalList.Controls.Add(btnDeleteGoal);
 
-            // DataGridView
-            dgvGoals = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                RowHeadersVisible = false,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            };
-            dgvGoals.EnableHeadersVisualStyles = false;
-            dgvGoals.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 23, 42);
-            dgvGoals.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvGoals.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dgvGoals.ColumnHeadersHeight = 36;
-            dgvGoals.RowTemplate.Height = 34;
-
-            pnlGridCard.Controls.Add(dgvGoals);
-            dgvGoals.BringToFront();
+            this.Controls.Add(grpGoalList);
         }
 
+        /// <summary>
+        /// Loads goals for active client into DataGridView.
+        /// </summary>
         private void LoadGoals()
         {
-            if (_activeClient == null || _activeClient.ClientID <= 0)
-            {
-                dgvGoals.DataSource = null;
-                return;
-            }
+            dgvGoals.Rows.Clear();
+            if (_activeClient == null) return;
 
-            string filter = cmbStatusFilter.SelectedItem?.ToString() ?? "All";
-            List<FitnessGoal> goals = _goalController.GetGoalsByClient(_activeClient.ClientID, filter);
+            string filter = cmbStatusFilter.SelectedItem?.ToString() ?? "All Goals";
+            List<FitnessGoal> goals = _goalController.GetGoalsByClient(_activeClient.ClientID);
 
-            dgvGoals.Columns.Clear();
-            dgvGoals.AutoGenerateColumns = false;
-
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "GoalID", HeaderText = "ID", DataPropertyName = "GoalID", Visible = false });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "GoalDescription", HeaderText = "Goal Description", DataPropertyName = "GoalDescription", FillWeight = 160 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentValue", HeaderText = "Current", DataPropertyName = "CurrentValue", FillWeight = 60 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "TargetValue", HeaderText = "Target", DataPropertyName = "TargetValue", FillWeight = 60 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "Unit", HeaderText = "Unit", DataPropertyName = "Unit", FillWeight = 50 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "Progress", HeaderText = "Progress", FillWeight = 70 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "TargetDate", HeaderText = "Target Deadline", DataPropertyName = "TargetDate", FillWeight = 90 });
-            dgvGoals.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", DataPropertyName = "Status", FillWeight = 80 });
-
-            var displayList = new List<object>();
             foreach (var g in goals)
             {
-                int percent = g.CalculateProgressPercentage();
-                string deadlineStr = g.TargetDate.ToString("dd MMM yyyy");
-                if (g.IsOverdue)
-                {
-                    deadlineStr += " (OVERDUE)";
-                }
+                if (filter == "In Progress" && g.Status != "In Progress") continue;
+                if (filter == "Completed" && g.Status != "Completed") continue;
 
-                displayList.Add(new
-                {
-                    GoalID = g.GoalID,
-                    GoalDescription = g.GoalDescription,
-                    CurrentValue = $"{g.CurrentValue:F1}",
-                    TargetValue = $"{g.TargetValue:F1}",
-                    Unit = g.Unit,
-                    Progress = $"{percent}%",
-                    TargetDate = deadlineStr,
-                    Status = g.Status
-                });
+                int pct = g.CalculateProgressPercentage();
+                dgvGoals.Rows.Add(
+                    g.GoalID,
+                    g.GoalDescription,
+                    $"{g.CurrentValue:F1}",
+                    $"{g.TargetValue:F1}",
+                    g.Unit,
+                    g.TargetDate.ToString("yyyy-MM-dd"),
+                    g.Status,
+                    $"{pct}%"
+                );
             }
+        }
 
-            dgvGoals.DataSource = displayList;
-
-            foreach (DataGridViewRow row in dgvGoals.Rows)
+        private void DgvGoals_SelectionChanged(object? sender, EventArgs e)
+        {
+            if (dgvGoals.SelectedRows.Count > 0)
             {
-                string status = row.Cells["Status"].Value?.ToString() ?? "";
-                string deadline = row.Cells["TargetDate"].Value?.ToString() ?? "";
-
-                if (status == "Completed")
+                var row = dgvGoals.SelectedRows[0];
+                if (decimal.TryParse(row.Cells["Current"].Value?.ToString(), out decimal currentVal))
                 {
-                    row.DefaultCellStyle.ForeColor = Color.FromArgb(16, 185, 129);
-                    row.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-                }
-                else if (deadline.Contains("OVERDUE"))
-                {
-                    row.DefaultCellStyle.ForeColor = Color.FromArgb(239, 68, 68);
+                    numUpdateProgress.Value = Math.Clamp(currentVal, numUpdateProgress.Minimum, numUpdateProgress.Maximum);
                 }
             }
         }
 
         private void BtnAddGoal_Click(object? sender, EventArgs e)
         {
-            lblGoalMsg.Text = "";
-
-            if (_activeClient == null || _activeClient.ClientID <= 0)
+            if (_activeClient == null)
             {
-                MessageBox.Show("Please select an active client before adding a goal.", "No Client Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select or register an active client before adding a goal.", "No Active Client", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            FitnessGoal newGoal = new FitnessGoal(
-                goalId: 0,
-                clientId: _activeClient.ClientID,
-                goalDescription: txtDescription.Text.Trim(),
-                targetValue: numTargetVal.Value,
-                currentValue: numCurrentVal.Value,
-                unit: cmbUnit.Text.Trim(),
-                targetDate: dtpTargetDate.Value.Date,
-                status: "In Progress",
-                dateCreated: DateTime.Now
-            );
+            string desc = txtDescription.Text.Trim();
+            if (string.IsNullOrWhiteSpace(desc))
+            {
+                lblAddStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblAddStatus.Text = "Please enter a description for the goal.";
+                txtDescription.Focus();
+                return;
+            }
 
-            bool success = _goalController.CreateGoal(newGoal, out string errorMessage);
+            decimal current = numCurrentVal.Value;
+            decimal target = numTargetVal.Value;
+            string unit = cmbUnit.SelectedItem?.ToString() ?? "kg";
+            DateTime targetDate = dtpTargetDate.Value.Date;
+
+            FitnessGoal newGoal = new FitnessGoal
+            {
+                ClientID = _activeClient.ClientID,
+                GoalDescription = desc,
+                CurrentValue = current,
+                TargetValue = target,
+                Unit = unit,
+                TargetDate = targetDate,
+                Status = "In Progress",
+                DateCreated = DateTime.Now
+            };
+
+            bool success = _goalController.CreateGoal(newGoal, out string err);
 
             if (success)
             {
-                lblGoalMsg.ForeColor = Color.FromArgb(16, 185, 129);
-                lblGoalMsg.Text = "✓ Fitness goal established successfully!";
+                lblAddStatus.ForeColor = Color.FromArgb(16, 185, 129);
+                lblAddStatus.Text = "✓ Goal added successfully!";
                 txtDescription.Clear();
                 LoadGoals();
             }
             else
             {
-                lblGoalMsg.ForeColor = Color.FromArgb(220, 38, 38);
-                lblGoalMsg.Text = errorMessage;
+                lblAddStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblAddStatus.Text = $"Error: {err}";
             }
         }
 
@@ -429,42 +371,16 @@ namespace VitalCheck.Views
             }
 
             int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
-            string desc = dgvGoals.SelectedRows[0].Cells["GoalDescription"].Value?.ToString() ?? "";
-            string currentValStr = dgvGoals.SelectedRows[0].Cells["CurrentValue"].Value?.ToString() ?? "0";
-            decimal.TryParse(currentValStr, out decimal currentVal);
+            decimal newValue = numUpdateProgress.Value;
 
-            Form prompt = new Form
+            bool success = _goalController.UpdateGoalProgress(goalId, newValue, "In Progress", out string err);
+            if (success)
             {
-                Width = 380,
-                Height = 220,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = "Update Goal Progress",
-                StartPosition = FormStartPosition.CenterParent,
-                MaximizeBox = false,
-                MinimizeBox = false,
-                BackColor = Color.White
-            };
-
-            Label textLabel = new Label { Left = 20, Top = 18, Width = 320, Text = $"Goal: {desc}", Font = new Font("Segoe UI", 9.5F, FontStyle.Bold) };
-            Label valLabel = new Label { Left = 20, Top = 58, Text = "New Current Value:", AutoSize = true, Font = new Font("Segoe UI", 9F) };
-            NumericUpDown numNewVal = new NumericUpDown { Left = 160, Top = 55, Width = 160, Minimum = 0, Maximum = 100000, DecimalPlaces = 1, Value = currentVal, Font = new Font("Segoe UI", 10F) };
-
-            Button confirmation = new Button { Text = "Save Progress", Left = 160, Width = 110, Top = 110, DialogResult = DialogResult.OK, BackColor = Color.FromArgb(2, 132, 199), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            confirmation.FlatAppearance.BorderSize = 0;
-            Button cancel = new Button { Text = "Cancel", Left = 280, Width = 70, Top = 110, DialogResult = DialogResult.Cancel, BackColor = Color.FromArgb(241, 245, 249), FlatStyle = FlatStyle.Flat };
-            cancel.FlatAppearance.BorderSize = 0;
-
-            prompt.Controls.Add(textLabel);
-            prompt.Controls.Add(valLabel);
-            prompt.Controls.Add(numNewVal);
-            prompt.Controls.Add(confirmation);
-            prompt.Controls.Add(cancel);
-            prompt.AcceptButton = confirmation;
-
-            if (prompt.ShowDialog() == DialogResult.OK)
-            {
-                _goalController.UpdateGoalProgress(goalId, numNewVal.Value, "In Progress", out string _);
                 LoadGoals();
+            }
+            else
+            {
+                MessageBox.Show($"Failed to update progress: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -472,21 +388,19 @@ namespace VitalCheck.Views
         {
             if (dgvGoals.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a goal to mark as completed.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select a goal from the table.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
-            bool success = _goalController.MarkGoalCompleted(goalId, out string errorMessage);
-
+            bool success = _goalController.MarkGoalCompleted(goalId, out string err);
             if (success)
             {
-                MessageBox.Show("Goal marked as completed! Congratulations on achieving this milestone!", "Milestone Achieved", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadGoals();
             }
             else
             {
-                MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Failed to complete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -494,17 +408,22 @@ namespace VitalCheck.Views
         {
             if (dgvGoals.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a goal to delete.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select a goal from the table to delete.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
+            DialogResult confirm = MessageBox.Show("Are you sure you want to delete this fitness goal?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirm != DialogResult.Yes) return;
 
-            DialogResult dr = MessageBox.Show("Are you sure you want to permanently delete this fitness goal?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (dr == DialogResult.Yes)
+            int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
+            bool success = _goalController.DeleteGoal(goalId, out string err);
+            if (success)
             {
-                _goalController.DeleteGoal(goalId, out string _);
                 LoadGoals();
+            }
+            else
+            {
+                MessageBox.Show($"Failed to delete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
