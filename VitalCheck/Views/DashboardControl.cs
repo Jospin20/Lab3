@@ -61,10 +61,18 @@ namespace VitalCheck.Views
             pnlBanner = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 85,
+                Height = 88,
                 BackColor = Color.White,
-                Padding = new Padding(24, 16, 24, 16),
+                Padding = new Padding(24, 16, 24, 14),
                 Margin = new Padding(0, 0, 0, 16)
+            };
+
+            FlowLayoutPanel pnlBannerFlow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.Transparent
             };
 
             Label lblGreeting = new Label
@@ -72,8 +80,8 @@ namespace VitalCheck.Views
                 Text = $"Welcome, {_currentUser.FullName}!",
                 Font = new Font("Segoe UI", 15F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(20, 14),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 4)
             };
 
             string subtitle = _currentUser.IsInstructor
@@ -85,12 +93,13 @@ namespace VitalCheck.Views
                 Text = subtitle,
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(22, 45),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0)
             };
 
-            pnlBanner.Controls.Add(lblGreeting);
-            pnlBanner.Controls.Add(lblSub);
+            pnlBannerFlow.Controls.Add(lblGreeting);
+            pnlBannerFlow.Controls.Add(lblSub);
+            pnlBanner.Controls.Add(pnlBannerFlow);
             this.Controls.Add(pnlBanner);
 
             // 2. Metrics Cards Row (FlowLayoutPanel with auto-wrapping for responsiveness)
@@ -196,7 +205,7 @@ namespace VitalCheck.Views
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = Color.FromArgb(248, 250, 252),
-                Font = new Font("Consolas", 9F),
+                Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(30, 41, 59),
                 BorderStyle = BorderStyle.FixedSingle
             };
