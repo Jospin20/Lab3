@@ -210,7 +210,7 @@ namespace VitalCheck.Controllers
         /// <summary>
         /// Helper for basic email format validation.
         /// </summary>
-        private static bool IsValidEmail(string email)
+        public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
             // Simple and reliable standard pattern for beginner email validation

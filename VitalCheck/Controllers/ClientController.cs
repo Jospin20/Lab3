@@ -216,7 +216,7 @@ namespace VitalCheck.Controllers
         /// <summary>
         /// Validates input values for ClientProfile.
         /// </summary>
-        private static bool ValidateClientInput(ClientProfile client, out string errorMessage)
+        public static bool ValidateClientInput(ClientProfile client, out string errorMessage)
         {
             errorMessage = string.Empty;
 
