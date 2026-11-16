@@ -7,41 +7,45 @@ using VitalCheck.Models;
 namespace VitalCheck.Views
 {
     /// <summary>
-    /// LoginForm provides authentication and user registration.
-    /// Features a clean, modern medical/fitness card design with responsive centering,
-    /// high-DPI scaling immunity, and clear validation feedback.
+    /// LoginForm provides straightforward user authentication and registration.
+    /// Uses standard Windows Forms controls (TabControl, GroupBoxes, Labels, TextBoxes, Buttons)
+    /// for clear, beginner-level desktop development.
     /// </summary>
     public class LoginForm : Form
     {
+        // Controller for user operations
         private readonly UserController _userController;
 
-        // Container Panels
-        private Panel pnlHeader;
-        private Label lblBrandIcon;
+        // Header controls
         private Label lblAppTitle;
         private Label lblAppSubtitle;
 
-        private Panel pnlCenterCard;
-        private Panel pnlSegmentedNav;
-        private Button btnToggleSignIn;
-        private Button btnToggleRegister;
+        // Tab control to switch between Sign In and Register
+        private TabControl tabAuth;
+        private TabPage tabSignIn;
+        private TabPage tabRegister;
 
-        private Panel pnlLoginView;
-        private Panel pnlRegisterView;
-
-        // Login Controls
+        // Sign In controls
+        private GroupBox grpSignIn;
+        private Label lblLoginEmail;
         private TextBox txtLoginEmail;
+        private Label lblLoginPassword;
         private TextBox txtLoginPassword;
         private Button btnLoginSubmit;
-        private Label lblLoginError;
+        private Label lblLoginStatus;
 
-        // Register Controls
+        // Register controls
+        private GroupBox grpRegister;
+        private Label lblRegFullName;
         private TextBox txtRegFullName;
+        private Label lblRegEmail;
         private TextBox txtRegEmail;
+        private Label lblRegPassword;
         private TextBox txtRegPassword;
+        private Label lblRegRole;
         private ComboBox cmbRegRole;
         private Button btnRegisterSubmit;
-        private Label lblRegError;
+        private Label lblRegStatus;
 
         public LoginForm()
         {
@@ -51,462 +55,387 @@ namespace VitalCheck.Views
 
         private void InitializeComponent()
         {
-            this.Text = "VitalCheck — Health & Fitness Diagnostic";
-            this.ClientSize = new Size(560, 750);
+            // Form setup
+            this.Text = "VitalCheck - Login";
+            this.ClientSize = new Size(480, 520);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.BackColor = Color.FromArgb(241, 245, 249); // Clean slate background
-            this.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            this.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
+            this.BackColor = Color.FromArgb(245, 247, 250);
 
-            // 1. Top Header Banner (Engineered for zero text clipping under any DPI scaling)
-            pnlHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 150,
-                BackColor = Color.FromArgb(15, 23, 42), // Deep Navy Slate
-                Padding = new Padding(20, 24, 20, 16)
-            };
-
-            TableLayoutPanel pnlHeaderTable = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 2,
-                BackColor = Color.Transparent
-            };
-            pnlHeaderTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            pnlHeaderTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            pnlHeaderTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-            // Brand Title Row: Icon Badge + "VitalCheck" (Horizontally Centered)
-            FlowLayoutPanel pnlBrandRow = new FlowLayoutPanel
-            {
-                AutoSize = true,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false,
-                BackColor = Color.Transparent,
-                Anchor = AnchorStyles.None,
-                Margin = new Padding(0, 0, 0, 6)
-            };
-
-            lblBrandIcon = new Label
-            {
-                Text = "VC",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(13, 148, 136), // Vibrant Teal
-                Size = new Size(38, 38),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Margin = new Padding(0, 2, 10, 0)
-            };
-
+            // 1. App Title and Subtitle at top
             lblAppTitle = new Label
             {
                 Text = "VitalCheck",
-                Font = new Font("Segoe UI", 22F, FontStyle.Bold),
-                ForeColor = Color.White,
-                AutoSize = true,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(0)
+                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(13, 148, 136), // Teal
+                Location = new Point(25, 18),
+                AutoSize = true
             };
-
-            pnlBrandRow.Controls.Add(lblBrandIcon);
-            pnlBrandRow.Controls.Add(lblAppTitle);
 
             lblAppSubtitle = new Label
             {
-                Text = "Personal Health & Fitness Diagnostic Platform",
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
-                ForeColor = Color.FromArgb(148, 163, 184),
-                AutoSize = true,
-                Anchor = AnchorStyles.None,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Margin = new Padding(0)
+                Text = "Health & Fitness Diagnostic System",
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(100, 116, 139), // Slate gray
+                Location = new Point(27, 52),
+                AutoSize = true
             };
 
-            pnlHeaderTable.Controls.Add(pnlBrandRow, 0, 0);
-            pnlHeaderTable.Controls.Add(lblAppSubtitle, 0, 1);
-            pnlHeader.Controls.Add(pnlHeaderTable);
-            this.Controls.Add(pnlHeader);
+            this.Controls.Add(lblAppTitle);
+            this.Controls.Add(lblAppSubtitle);
 
-            // 2. Center Card Container
-            pnlCenterCard = new Panel
+            // 2. TabControl for switching between Sign In and Register
+            tabAuth = new TabControl
             {
-                Size = new Size(470, 545),
-                Location = new Point((this.ClientSize.Width - 470) / 2, 168),
-                BackColor = Color.White,
-                Padding = new Padding(25, 20, 25, 20)
-            };
-            this.Controls.Add(pnlCenterCard);
-            pnlCenterCard.BringToFront();
-
-            // Segmented View Switcher (Sign In vs Register)
-            pnlSegmentedNav = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 44,
-                BackColor = Color.FromArgb(241, 245, 249),
-                Padding = new Padding(3)
+                Location = new Point(25, 85),
+                Size = new Size(430, 410)
             };
 
-            btnToggleSignIn = new Button
-            {
-                Text = "Sign In",
-                Dock = DockStyle.Left,
-                Width = 207,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.White,
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnToggleSignIn.FlatAppearance.BorderSize = 0;
-            btnToggleSignIn.Click += (s, e) => ShowLoginPanel();
+            tabSignIn = new TabPage("Sign In");
+            tabSignIn.BackColor = Color.White;
+            tabSignIn.Padding = new Padding(15);
 
-            btnToggleRegister = new Button
-            {
-                Text = "Create Account",
-                Dock = DockStyle.Right,
-                Width = 207,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnToggleRegister.FlatAppearance.BorderSize = 0;
-            btnToggleRegister.Click += (s, e) => ShowRegisterPanel();
+            tabRegister = new TabPage("Register Account");
+            tabRegister.BackColor = Color.White;
+            tabRegister.Padding = new Padding(15);
 
-            pnlSegmentedNav.Controls.Add(btnToggleSignIn);
-            pnlSegmentedNav.Controls.Add(btnToggleRegister);
-            pnlCenterCard.Controls.Add(pnlSegmentedNav);
+            BuildSignInTab();
+            BuildRegisterTab();
 
-            // 3. Build Login View Panel
-            pnlLoginView = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(10, 20, 10, 10)
-            };
-            BuildLoginView();
-
-            // 4. Build Register View Panel
-            pnlRegisterView = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(10, 15, 10, 10),
-                Visible = false
-            };
-            BuildRegisterView();
-
-            pnlCenterCard.Controls.Add(pnlRegisterView);
-            pnlCenterCard.Controls.Add(pnlLoginView);
-            pnlLoginView.BringToFront();
+            tabAuth.TabPages.Add(tabSignIn);
+            tabAuth.TabPages.Add(tabRegister);
+            this.Controls.Add(tabAuth);
         }
 
-        private void BuildLoginView()
+        /// <summary>
+        /// Builds the Sign In tab with a clean GroupBox, TextBoxes, and Login Button.
+        /// </summary>
+        private void BuildSignInTab()
         {
-            int curY = 25;
-
-            Label lblEmail = new Label
+            grpSignIn = new GroupBox
             {
-                Text = "Email Address",
-                Location = new Point(15, curY),
-                AutoSize = true,
+                Text = " User Login ",
+                Location = new Point(15, 15),
+                Size = new Size(390, 335),
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 41, 59)
+            };
+
+            // Email Field
+            lblLoginEmail = new Label
+            {
+                Text = "Email Address:",
+                Location = new Point(20, 35),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
 
-            curY += 25;
             txtLoginEmail = new TextBox
             {
-                Location = new Point(15, curY),
-                Width = 380,
-                Font = new Font("Segoe UI", 11F),
+                Location = new Point(20, 58),
+                Width = 350,
+                Font = new Font("Segoe UI", 10F),
                 PlaceholderText = "name@example.com"
             };
 
-            curY += 45;
-            Label lblPassword = new Label
+            // Password Field
+            lblLoginPassword = new Label
             {
-                Text = "Password",
-                Location = new Point(15, curY),
+                Text = "Password:",
+                Location = new Point(20, 100),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
 
-            curY += 25;
             txtLoginPassword = new TextBox
             {
-                Location = new Point(15, curY),
-                Width = 380,
-                Font = new Font("Segoe UI", 11F),
-                UseSystemPasswordChar = true,
-                PlaceholderText = "Enter your account password"
+                Location = new Point(20, 123),
+                Width = 350,
+                Font = new Font("Segoe UI", 10F),
+                PasswordChar = '•'
             };
-            txtLoginPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) BtnLogin_Click(s, e); };
+            txtLoginPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) BtnLoginSubmit_Click(s, e); };
 
-            curY += 50;
+            // Sign In Button
             btnLoginSubmit = new Button
             {
-                Text = "Sign In to VitalCheck",
-                Location = new Point(15, curY),
-                Size = new Size(380, 44),
-                BackColor = Color.FromArgb(13, 148, 136), // Vibrant Teal
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnLoginSubmit.FlatAppearance.BorderSize = 0;
-            btnLoginSubmit.Click += BtnLogin_Click;
-
-            curY += 55;
-            lblLoginError = new Label
-            {
-                Location = new Point(15, curY),
-                Size = new Size(380, 45),
-                ForeColor = Color.FromArgb(220, 38, 38), // Crimson Red
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                Text = "",
-                TextAlign = ContentAlignment.TopCenter
-            };
-
-            curY += 50;
-            Button btnGoReg = new Button
-            {
-                Text = "Don't have an account? Register as Individual or Instructor →",
-                Location = new Point(15, curY),
-                Size = new Size(380, 32),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(2, 132, 199),
-                BackColor = Color.Transparent,
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                Cursor = Cursors.Hand
-            };
-            btnGoReg.FlatAppearance.BorderSize = 0;
-            btnGoReg.Click += (s, e) => ShowRegisterPanel();
-
-            pnlLoginView.Controls.Add(lblEmail);
-            pnlLoginView.Controls.Add(txtLoginEmail);
-            pnlLoginView.Controls.Add(lblPassword);
-            pnlLoginView.Controls.Add(txtLoginPassword);
-            pnlLoginView.Controls.Add(btnLoginSubmit);
-            pnlLoginView.Controls.Add(lblLoginError);
-            pnlLoginView.Controls.Add(btnGoReg);
-        }
-
-        private void BuildRegisterView()
-        {
-            int curY = 10;
-
-            Label lblFullName = new Label
-            {
-                Text = "Full Name",
-                Location = new Point(15, curY),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(51, 65, 85)
-            };
-
-            curY += 22;
-            txtRegFullName = new TextBox
-            {
-                Location = new Point(15, curY),
-                Width = 380,
-                Font = new Font("Segoe UI", 10F),
-                PlaceholderText = "e.g., Alex Johnson"
-            };
-
-            curY += 38;
-            Label lblEmail = new Label
-            {
-                Text = "Email Address",
-                Location = new Point(15, curY),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(51, 65, 85)
-            };
-
-            curY += 22;
-            txtRegEmail = new TextBox
-            {
-                Location = new Point(15, curY),
-                Width = 380,
-                Font = new Font("Segoe UI", 10F),
-                PlaceholderText = "name@example.com"
-            };
-
-            curY += 38;
-            Label lblPassword = new Label
-            {
-                Text = "Password (min 6 characters)",
-                Location = new Point(15, curY),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(51, 65, 85)
-            };
-
-            curY += 22;
-            txtRegPassword = new TextBox
-            {
-                Location = new Point(15, curY),
-                Width = 380,
-                Font = new Font("Segoe UI", 10F),
-                UseSystemPasswordChar = true
-            };
-
-            curY += 38;
-            Label lblRole = new Label
-            {
-                Text = "Account Role",
-                Location = new Point(15, curY),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(51, 65, 85)
-            };
-
-            curY += 22;
-            cmbRegRole = new ComboBox
-            {
-                Location = new Point(15, curY),
-                Width = 380,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Segoe UI", 10F)
-            };
-            cmbRegRole.Items.Add("Individual — Track personal wellness & goals");
-            cmbRegRole.Items.Add("Instructor — Manage clients & conduct diagnostics");
-            cmbRegRole.SelectedIndex = 0;
-
-            curY += 45;
-            btnRegisterSubmit = new Button
-            {
-                Text = "Create VitalCheck Account",
-                Location = new Point(15, curY),
-                Size = new Size(380, 42),
+                Text = "Sign In",
+                Location = new Point(20, 180),
+                Size = new Size(350, 40),
                 BackColor = Color.FromArgb(13, 148, 136),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
-            btnRegisterSubmit.FlatAppearance.BorderSize = 0;
-            btnRegisterSubmit.Click += BtnRegister_Click;
+            btnLoginSubmit.FlatAppearance.BorderSize = 0;
+            btnLoginSubmit.Click += BtnLoginSubmit_Click;
 
-            curY += 48;
-            lblRegError = new Label
+            // Status / Error message
+            lblLoginStatus = new Label
             {
-                Location = new Point(15, curY),
-                Size = new Size(380, 35),
-                ForeColor = Color.FromArgb(220, 38, 38),
+                Location = new Point(20, 235),
+                Size = new Size(350, 60),
+                ForeColor = Color.FromArgb(220, 38, 38), // Red
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                Text = "",
-                TextAlign = ContentAlignment.TopCenter
+                TextAlign = ContentAlignment.TopCenter,
+                Text = ""
             };
 
-            curY += 38;
-            Button btnGoLogin = new Button
+            grpSignIn.Controls.Add(lblLoginEmail);
+            grpSignIn.Controls.Add(txtLoginEmail);
+            grpSignIn.Controls.Add(lblLoginPassword);
+            grpSignIn.Controls.Add(txtLoginPassword);
+            grpSignIn.Controls.Add(btnLoginSubmit);
+            grpSignIn.Controls.Add(lblLoginStatus);
+
+            tabSignIn.Controls.Add(grpSignIn);
+        }
+
+        /// <summary>
+        /// Builds the Register tab with standard form fields and Role selection.
+        /// </summary>
+        private void BuildRegisterTab()
+        {
+            grpRegister = new GroupBox
             {
-                Text = "Already registered? Switch to Sign In →",
-                Location = new Point(15, curY),
-                Size = new Size(380, 28),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(2, 132, 199),
-                BackColor = Color.Transparent,
+                Text = " Create New Account ",
+                Location = new Point(15, 15),
+                Size = new Size(390, 345),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 41, 59)
+            };
+
+            int curY = 30;
+
+            // Full Name
+            lblRegFullName = new Label
+            {
+                Text = "Full Name:",
+                Location = new Point(20, curY),
+                AutoSize = true,
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(51, 65, 85)
+            };
+            txtRegFullName = new TextBox
+            {
+                Location = new Point(20, curY + 20),
+                Width = 350,
+                Font = new Font("Segoe UI", 9.5F)
+            };
+
+            // Email
+            curY += 52;
+            lblRegEmail = new Label
+            {
+                Text = "Email Address:",
+                Location = new Point(20, curY),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(51, 65, 85)
+            };
+            txtRegEmail = new TextBox
+            {
+                Location = new Point(20, curY + 20),
+                Width = 350,
+                Font = new Font("Segoe UI", 9.5F)
+            };
+
+            // Password
+            curY += 52;
+            lblRegPassword = new Label
+            {
+                Text = "Password (minimum 6 characters):",
+                Location = new Point(20, curY),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(51, 65, 85)
+            };
+            txtRegPassword = new TextBox
+            {
+                Location = new Point(20, curY + 20),
+                Width = 350,
+                Font = new Font("Segoe UI", 9.5F),
+                PasswordChar = '•'
+            };
+
+            // Role
+            curY += 52;
+            lblRegRole = new Label
+            {
+                Text = "Account Role:",
+                Location = new Point(20, curY),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(51, 65, 85)
+            };
+            cmbRegRole = new ComboBox
+            {
+                Location = new Point(20, curY + 20),
+                Width = 350,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9.5F)
+            };
+            cmbRegRole.Items.AddRange(new object[] { "Individual User", "Fitness Instructor" });
+            cmbRegRole.SelectedIndex = 0;
+
+            // Submit Button
+            curY += 56;
+            btnRegisterSubmit = new Button
+            {
+                Text = "Create Account",
+                Location = new Point(20, curY),
+                Size = new Size(350, 38),
+                BackColor = Color.FromArgb(13, 148, 136),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
-            btnGoLogin.FlatAppearance.BorderSize = 0;
-            btnGoLogin.Click += (s, e) => ShowLoginPanel();
+            btnRegisterSubmit.FlatAppearance.BorderSize = 0;
+            btnRegisterSubmit.Click += BtnRegisterSubmit_Click;
 
-            pnlRegisterView.Controls.Add(lblFullName);
-            pnlRegisterView.Controls.Add(txtRegFullName);
-            pnlRegisterView.Controls.Add(lblEmail);
-            pnlRegisterView.Controls.Add(txtRegEmail);
-            pnlRegisterView.Controls.Add(lblPassword);
-            pnlRegisterView.Controls.Add(txtRegPassword);
-            pnlRegisterView.Controls.Add(lblRole);
-            pnlRegisterView.Controls.Add(cmbRegRole);
-            pnlRegisterView.Controls.Add(btnRegisterSubmit);
-            pnlRegisterView.Controls.Add(lblRegError);
-            pnlRegisterView.Controls.Add(btnGoLogin);
+            // Status Label
+            curY += 44;
+            lblRegStatus = new Label
+            {
+                Location = new Point(20, curY),
+                Size = new Size(350, 30),
+                ForeColor = Color.FromArgb(220, 38, 38),
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
+                TextAlign = ContentAlignment.TopCenter,
+                Text = ""
+            };
+
+            grpRegister.Controls.Add(lblRegFullName);
+            grpRegister.Controls.Add(txtRegFullName);
+            grpRegister.Controls.Add(lblRegEmail);
+            grpRegister.Controls.Add(txtRegEmail);
+            grpRegister.Controls.Add(lblRegPassword);
+            grpRegister.Controls.Add(txtRegPassword);
+            grpRegister.Controls.Add(lblRegRole);
+            grpRegister.Controls.Add(cmbRegRole);
+            grpRegister.Controls.Add(btnRegisterSubmit);
+            grpRegister.Controls.Add(lblRegStatus);
+
+            tabRegister.Controls.Add(grpRegister);
         }
 
-        private void ShowLoginPanel()
+        /// <summary>
+        /// Handles the Sign In button click event.
+        /// </summary>
+        private void BtnLoginSubmit_Click(object? sender, EventArgs e)
         {
-            btnToggleSignIn.BackColor = Color.White;
-            btnToggleSignIn.ForeColor = Color.FromArgb(15, 23, 42);
-            btnToggleRegister.BackColor = Color.Transparent;
-            btnToggleRegister.ForeColor = Color.FromArgb(100, 116, 139);
-
-            pnlRegisterView.Visible = false;
-            pnlLoginView.Visible = true;
-            pnlLoginView.BringToFront();
-            lblLoginError.Text = "";
-            txtLoginEmail.Focus();
-        }
-
-        private void ShowRegisterPanel()
-        {
-            btnToggleRegister.BackColor = Color.White;
-            btnToggleRegister.ForeColor = Color.FromArgb(15, 23, 42);
-            btnToggleSignIn.BackColor = Color.Transparent;
-            btnToggleSignIn.ForeColor = Color.FromArgb(100, 116, 139);
-
-            pnlLoginView.Visible = false;
-            pnlRegisterView.Visible = true;
-            pnlRegisterView.BringToFront();
-            lblRegError.Text = "";
-            txtRegFullName.Focus();
-        }
-
-        private void BtnLogin_Click(object? sender, EventArgs e)
-        {
-            lblLoginError.Text = "";
+            lblLoginStatus.Text = "";
             string email = txtLoginEmail.Text.Trim();
             string password = txtLoginPassword.Text;
 
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                lblLoginStatus.Text = "Please enter your email address.";
+                txtLoginEmail.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                lblLoginStatus.Text = "Please enter your password.";
+                txtLoginPassword.Focus();
+                return;
+            }
+
+            // Attempt login via controller
             bool success = _userController.Login(email, password, out User? user, out string errorMessage);
 
             if (success && user != null)
             {
+                // Clear fields
+                txtLoginPassword.Clear();
+                lblLoginStatus.Text = "";
+
+                // Open Main Dashboard
                 this.Hide();
                 MainDashboardForm dashboard = new MainDashboardForm(user);
-                dashboard.FormClosed += (s, args) => this.Close();
+                dashboard.FormClosed += (s, args) => {
+                    this.Show();
+                    txtLoginPassword.Clear();
+                };
                 dashboard.Show();
             }
             else
             {
-                lblLoginError.Text = errorMessage;
+                lblLoginStatus.Text = errorMessage;
             }
         }
 
-        private void BtnRegister_Click(object? sender, EventArgs e)
+        /// <summary>
+        /// Handles the Register button click event.
+        /// </summary>
+        private void BtnRegisterSubmit_Click(object? sender, EventArgs e)
         {
-            lblRegError.Text = "";
+            lblRegStatus.Text = "";
             string fullName = txtRegFullName.Text.Trim();
             string email = txtRegEmail.Text.Trim();
             string password = txtRegPassword.Text;
-            string roleSelection = cmbRegRole.SelectedItem?.ToString() ?? "";
-            string role = roleSelection.StartsWith("Instructor") ? "Instructor" : "Individual";
+            string role = cmbRegRole.SelectedIndex == 1 ? "Instructor" : "Individual";
 
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblRegStatus.Text = "Please enter your full name.";
+                txtRegFullName.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@") || !email.Contains("."))
+            {
+                lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblRegStatus.Text = "Please enter a valid email address.";
+                txtRegEmail.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            {
+                lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblRegStatus.Text = "Password must be at least 6 characters long.";
+                txtRegPassword.Focus();
+                return;
+            }
+
+            // Register via controller
             bool success = _userController.Register(fullName, email, password, role, out string errorMessage);
 
             if (success)
             {
-                MessageBox.Show("Registration successful! You may now sign in with your email and password.",
-                                "VitalCheck Registration", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                ShowLoginPanel();
+                MessageBox.Show(
+                    "Account registered successfully!\r\n\r\nYou can now sign in using your email and password.",
+                    "Registration Successful",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                // Switch to Sign In tab and pre-fill email
                 txtLoginEmail.Text = email;
                 txtLoginPassword.Clear();
+                txtRegFullName.Clear();
+                txtRegEmail.Clear();
+                txtRegPassword.Clear();
+                lblRegStatus.Text = "";
+
+                tabAuth.SelectedTab = tabSignIn;
                 txtLoginPassword.Focus();
             }
             else
             {
-                lblRegError.Text = errorMessage;
+                lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                lblRegStatus.Text = errorMessage;
             }
         }
     }
