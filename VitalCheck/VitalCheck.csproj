@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);WFO1000;CS8618;CS8625</NoWarn>
+    <NoWarn>$(NoWarn);WFO1000;CS8618;CS8625;CS8602;CS8604;CS8622;CS8600</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
