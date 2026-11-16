@@ -17,20 +17,14 @@ namespace VitalCheck.Views
         private readonly ClientProfile? _activeClient;
         private readonly AssessmentController _assessmentController;
 
-        // UI Controls
+        // Container Panels
         private Panel pnlHeader;
-        private Label lblTitle;
-        private Label lblSubtitle;
-
-        // Metric Comparison Cards
         private FlowLayoutPanel pnlComparison;
-        private Panel cardWeightChange;
-        private Panel cardBmiChange;
-        private Panel cardTotalChecks;
-        private Panel cardAverages;
+        private TableLayoutPanel pnlBodyGrid;
+        private Panel pnlHistoryCard;
+        private Panel pnlFeedbackCard;
 
-        // History Grid & Details
-        private Panel pnlHistoryContainer;
+        // Grid & Feedback Controls
         private DataGridView dgvAssessments;
         private TextBox txtSelectedFeedback;
         private Label lblFeedbackHeader;
@@ -53,23 +47,24 @@ namespace VitalCheck.Views
             this.BackColor = Color.FromArgb(248, 250, 252);
             this.Font = new Font("Segoe UI", 10F);
             this.AutoScroll = true;
-            this.Padding = new Padding(25);
+            this.Padding = new Padding(25, 20, 25, 25);
 
-            // 1. Header
+            // 1. Top Header Banner
             pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
+                Height = 75,
                 BackColor = Color.White,
-                Padding = new Padding(20, 12, 20, 10)
+                Padding = new Padding(24, 14, 24, 12),
+                Margin = new Padding(0, 0, 0, 16)
             };
 
-            lblTitle = new Label
+            Label lblTitle = new Label
             {
-                Text = "Progress Tracking & Assessment History",
-                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+                Text = "Progress Analytics & Assessment History",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(15, 10),
+                Location = new Point(20, 12),
                 AutoSize = true
             };
 
@@ -77,12 +72,12 @@ namespace VitalCheck.Views
                 ? $"Monitoring Progress for: {_activeClient.FullName}"
                 : "No active client selected.";
 
-            lblSubtitle = new Label
+            Label lblSubtitle = new Label
             {
                 Text = sub,
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(13, 148, 136),
-                Location = new Point(15, 40),
+                Location = new Point(22, 42),
                 AutoSize = true
             };
 
@@ -90,40 +85,79 @@ namespace VitalCheck.Views
             pnlHeader.Controls.Add(lblSubtitle);
             this.Controls.Add(pnlHeader);
 
-            // 2. Comparison Cards
+            // 2. Comparative Metric Cards Strip
             pnlComparison = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 125,
+                Height = 110,
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false,
-                Margin = new Padding(0, 15, 0, 15),
-                Padding = new Padding(0, 15, 0, 0)
+                AutoScroll = false,
+                Padding = new Padding(0, 10, 0, 10)
             };
             this.Controls.Add(pnlComparison);
 
-            // 3. History Grid and Selected Feedback container
-            pnlHistoryContainer = new Panel
+            // 3. Middle 2-Column Split: Table on Left (55%), Full Report Viewer on Right (45%)
+            pnlBodyGrid = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Padding = new Padding(0, 12, 0, 0)
+            };
+            pnlBodyGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            pnlBodyGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+
+            // Left History Card
+            pnlHistoryCard = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Padding = new Padding(20),
-                Margin = new Padding(0, 15, 0, 0)
+                Padding = new Padding(22),
+                Margin = new Padding(0, 0, 12, 0)
             };
+            BuildHistoryCard();
 
+            // Right Feedback Card
+            pnlFeedbackCard = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(22),
+                Margin = new Padding(12, 0, 0, 0)
+            };
+            BuildFeedbackCard();
+
+            pnlBodyGrid.Controls.Add(pnlHistoryCard, 0, 0);
+            pnlBodyGrid.Controls.Add(pnlFeedbackCard, 1, 0);
+
+            this.Controls.Add(pnlBodyGrid);
+            pnlBodyGrid.BringToFront();
+        }
+
+        private void BuildHistoryCard()
+        {
             Label lblGridHeading = new Label
             {
-                Text = "Assessment History Log",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Text = "Historical Checkup Logs",
+                Font = new Font("Segoe UI", 12.5F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(15, 12),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 28
+            };
+
+            Label lblSub = new Label
+            {
+                Text = "Select any assessment below to inspect its detailed evaluation:",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Dock = DockStyle.Top,
+                Height = 24
             };
 
             dgvAssessments = new DataGridView
             {
-                Location = new Point(15, 45),
-                Size = new Size(580, 420),
+                Dock = DockStyle.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 RowHeadersVisible = false,
@@ -137,24 +171,40 @@ namespace VitalCheck.Views
             dgvAssessments.EnableHeadersVisualStyles = false;
             dgvAssessments.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 23, 42);
             dgvAssessments.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvAssessments.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dgvAssessments.ColumnHeadersHeight = 32;
-            dgvAssessments.RowTemplate.Height = 30;
+            dgvAssessments.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvAssessments.ColumnHeadersHeight = 36;
+            dgvAssessments.RowTemplate.Height = 32;
             dgvAssessments.SelectionChanged += DgvAssessments_SelectionChanged;
 
+            pnlHistoryCard.Controls.Add(dgvAssessments);
+            pnlHistoryCard.Controls.Add(lblSub);
+            pnlHistoryCard.Controls.Add(lblGridHeading);
+            dgvAssessments.BringToFront();
+        }
+
+        private void BuildFeedbackCard()
+        {
             lblFeedbackHeader = new Label
             {
-                Text = "Diagnostic Feedback for Selected Checkup:",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                Text = "Diagnostic Report for Selected Checkup",
+                Font = new Font("Segoe UI", 12.5F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(615, 15),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 28
+            };
+
+            Label lblSub = new Label
+            {
+                Text = "Stored recommendations, metabolic data, and lifestyle feedback:",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Dock = DockStyle.Top,
+                Height = 24
             };
 
             txtSelectedFeedback = new TextBox
             {
-                Location = new Point(615, 45),
-                Size = new Size(330, 420),
+                Dock = DockStyle.Fill,
                 Multiline = true,
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
@@ -164,29 +214,26 @@ namespace VitalCheck.Views
                 BorderStyle = BorderStyle.FixedSingle
             };
 
-            pnlHistoryContainer.Controls.Add(lblGridHeading);
-            pnlHistoryContainer.Controls.Add(dgvAssessments);
-            pnlHistoryContainer.Controls.Add(lblFeedbackHeader);
-            pnlHistoryContainer.Controls.Add(txtSelectedFeedback);
-
-            this.Controls.Add(pnlHistoryContainer);
-            pnlHistoryContainer.BringToFront();
+            pnlFeedbackCard.Controls.Add(txtSelectedFeedback);
+            pnlFeedbackCard.Controls.Add(lblSub);
+            pnlFeedbackCard.Controls.Add(lblFeedbackHeader);
+            txtSelectedFeedback.BringToFront();
         }
 
         private Panel CreateMetricCard(string title, string value, string subtitle, Color accentColor)
         {
             Panel card = new Panel
             {
-                Size = new Size(225, 100),
+                Size = new Size(230, 90),
                 BackColor = Color.White,
-                Margin = new Padding(0, 0, 15, 0),
-                Padding = new Padding(12)
+                Margin = new Padding(0, 0, 16, 0),
+                Padding = new Padding(14, 10, 14, 10)
             };
 
             Panel bar = new Panel { Dock = DockStyle.Left, Width = 5, BackColor = accentColor };
-            Label lblT = new Label { Text = title, Font = new Font("Segoe UI", 9F), ForeColor = Color.FromArgb(100, 116, 139), Location = new Point(14, 10), AutoSize = true };
-            Label lblV = new Label { Text = value, Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Color.FromArgb(15, 23, 42), Location = new Point(14, 28), AutoSize = true };
-            Label lblS = new Label { Text = subtitle, Font = new Font("Segoe UI", 8.5F), ForeColor = accentColor, Location = new Point(14, 65), AutoSize = true };
+            Label lblT = new Label { Text = title, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.FromArgb(100, 116, 139), Location = new Point(14, 8), AutoSize = true };
+            Label lblV = new Label { Text = value, Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Color.FromArgb(15, 23, 42), Location = new Point(12, 26), AutoSize = true };
+            Label lblS = new Label { Text = subtitle, Font = new Font("Segoe UI", 8F), ForeColor = accentColor, Location = new Point(14, 62), AutoSize = true };
 
             card.Controls.Add(bar);
             card.Controls.Add(lblT);
@@ -207,14 +254,12 @@ namespace VitalCheck.Views
             }
 
             _assessments = _assessmentController.GetAssessmentsByClient(_activeClient.ClientID);
-
             pnlComparison.Controls.Clear();
 
             if (_assessments.Count == 0)
             {
-                cardTotalChecks = CreateMetricCard("Assessments Logged", "0", "No checkups yet", Color.FromArgb(100, 116, 139));
-                pnlComparison.Controls.Add(cardTotalChecks);
-                txtSelectedFeedback.Text = "No previous assessments recorded for this client.";
+                pnlComparison.Controls.Add(CreateMetricCard("CHECKUPS LOGGED", "0", "No assessments on record", Color.FromArgb(100, 116, 139)));
+                txtSelectedFeedback.Text = "No previous assessments recorded for this client. Conduct an assessment to begin tracking development.";
                 dgvAssessments.DataSource = null;
                 return;
             }
@@ -227,19 +272,15 @@ namespace VitalCheck.Views
             decimal bmiDiff = newest.BMI - oldest.BMI;
 
             string weightDiffStr = weightDiff > 0 ? $"+{weightDiff:F1} kg" : $"{weightDiff:F1} kg";
-            string weightSub = _assessments.Count > 1 ? $"From {oldest.Weight:F1} to {newest.Weight:F1} kg" : "Baseline recorded";
+            string weightSub = _assessments.Count > 1 ? $"From {oldest.Weight:F1} to {newest.Weight:F1} kg" : "Baseline established";
             Color weightColor = weightDiff < 0 ? Color.FromArgb(16, 185, 129) : (weightDiff > 0 ? Color.FromArgb(249, 115, 22) : Color.FromArgb(13, 148, 136));
-            cardWeightChange = CreateMetricCard("Net Weight Change", weightDiffStr, weightSub, weightColor);
-            pnlComparison.Controls.Add(cardWeightChange);
+            pnlComparison.Controls.Add(CreateMetricCard("NET WEIGHT CHANGE", weightDiffStr, weightSub, weightColor));
 
             string bmiDiffStr = bmiDiff > 0 ? $"+{bmiDiff:F1}" : $"{bmiDiff:F1}";
-            string bmiSub = _assessments.Count > 1 ? $"Initial: {oldest.BMI:F1} -> Now: {newest.BMI:F1}" : newest.BMICategory;
-            Color bmiColor = Color.FromArgb(2, 132, 199);
-            cardBmiChange = CreateMetricCard("Net BMI Change", bmiDiffStr, bmiSub, bmiColor);
-            pnlComparison.Controls.Add(cardBmiChange);
+            string bmiSub = _assessments.Count > 1 ? $"Initial: {oldest.BMI:F1} → Now: {newest.BMI:F1}" : newest.BMICategory;
+            pnlComparison.Controls.Add(CreateMetricCard("NET BMI CHANGE", bmiDiffStr, bmiSub, Color.FromArgb(2, 132, 199)));
 
-            cardTotalChecks = CreateMetricCard("Total Checkups", _assessments.Count.ToString(), $"First: {oldest.AssessmentDate:dd MMM yyyy}", Color.FromArgb(124, 58, 237));
-            pnlComparison.Controls.Add(cardTotalChecks);
+            pnlComparison.Controls.Add(CreateMetricCard("TOTAL CHECKUPS", _assessments.Count.ToString(), $"Baseline: {oldest.AssessmentDate:dd MMM yyyy}", Color.FromArgb(124, 58, 237)));
 
             decimal avgSleep = 0m;
             decimal avgWater = 0m;
@@ -251,19 +292,18 @@ namespace VitalCheck.Views
             avgSleep /= _assessments.Count;
             avgWater /= _assessments.Count;
 
-            cardAverages = CreateMetricCard("Lifestyle Averages", $"{avgSleep:F1}h / {avgWater:F1}L", "Avg Sleep / Water Intake", Color.FromArgb(13, 148, 136));
-            pnlComparison.Controls.Add(cardAverages);
+            pnlComparison.Controls.Add(CreateMetricCard("LIFESTYLE AVERAGES", $"{avgSleep:F1}h / {avgWater:F1}L", "Avg Sleep / Water Intake", Color.FromArgb(13, 148, 136)));
 
             // Populate Grid
             dgvAssessments.Columns.Clear();
             dgvAssessments.AutoGenerateColumns = false;
 
-            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "AssessmentDate", HeaderText = "Date", DataPropertyName = "AssessmentDate", FillWeight = 110 });
-            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "Weight", HeaderText = "Weight", DataPropertyName = "Weight", FillWeight = 70 });
-            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "Height", HeaderText = "Height", DataPropertyName = "Height", FillWeight = 70 });
-            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "BMI", HeaderText = "BMI", DataPropertyName = "BMI", FillWeight = 60 });
+            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "AssessmentDate", HeaderText = "Date & Time", DataPropertyName = "AssessmentDate", FillWeight = 110 });
+            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "Weight", HeaderText = "Weight", DataPropertyName = "Weight", FillWeight = 65 });
+            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "Height", HeaderText = "Height", DataPropertyName = "Height", FillWeight = 65 });
+            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "BMI", HeaderText = "BMI", DataPropertyName = "BMI", FillWeight = 55 });
             dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "BMICategory", HeaderText = "Classification", DataPropertyName = "BMICategory", FillWeight = 110 });
-            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "ActivityLevel", HeaderText = "Activity", DataPropertyName = "ActivityLevel", FillWeight = 90 });
+            dgvAssessments.Columns.Add(new DataGridViewTextBoxColumn { Name = "ActivityLevel", HeaderText = "Activity", DataPropertyName = "ActivityLevel", FillWeight = 85 });
 
             var displayList = new List<object>();
             foreach (var a in _assessments)
@@ -295,7 +335,7 @@ namespace VitalCheck.Views
                 if (index >= 0 && index < _assessments.Count)
                 {
                     txtSelectedFeedback.Text = _assessments[index].Feedback;
-                    lblFeedbackHeader.Text = $"Diagnostic Feedback ({_assessments[index].AssessmentDate:dd MMM yyyy}):";
+                    lblFeedbackHeader.Text = $"Diagnostic Report ({_assessments[index].AssessmentDate:dd MMM yyyy}):";
                 }
             }
         }
