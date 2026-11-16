@@ -10,6 +10,7 @@ namespace VitalCheck.Views
     /// MainDashboardForm serves as the primary application shell.
     /// Hosts the modern responsive sidebar navigation, role-based controls,
     /// active client context switcher, and dynamically docks content views.
+    /// Engineered with zero-overlap and DPI-safe layout containers.
     /// </summary>
     public class MainDashboardForm : Form
     {
@@ -25,13 +26,18 @@ namespace VitalCheck.Views
 
         // Sidebar Branding & User Profile
         private Panel pnlBrand;
+        private TableLayoutPanel pnlBrandTable;
+        private Label lblLogoBadge;
         private Label lblBrand;
         private Label lblBrandSub;
+
+        private Panel pnlUserCardWrapper;
         private Panel pnlUserCard;
         private Label lblUserName;
         private Label lblUserRole;
 
         // Navigation Buttons
+        private Panel pnlNavContainer;
         private Button btnNavDashboard;
         private Button btnNavAssessment;
         private Button btnNavGoals;
@@ -41,8 +47,9 @@ namespace VitalCheck.Views
 
         // Top Bar Controls
         private Label lblPageTitle;
+        private FlowLayoutPanel pnlTopRight;
         private Label lblActiveClientNotice;
-        private ComboBox? cmbClientPicker; // For instructors to quickly switch clients
+        private ComboBox? cmbClientPicker;
 
         private string _currentViewName = "Dashboard";
 
@@ -78,7 +85,7 @@ namespace VitalCheck.Views
         private void InitializeComponent()
         {
             this.Text = "VitalCheck — Health & Fitness Diagnostic Suite";
-            this.ClientSize = new Size(1300, 820);
+            this.ClientSize = new Size(1320, 840);
             this.MinimumSize = new Size(1100, 720);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(248, 250, 252);
@@ -88,29 +95,52 @@ namespace VitalCheck.Views
             pnlSidebar = new Panel
             {
                 Dock = DockStyle.Left,
-                Width = 260,
+                Width = 270,
                 BackColor = Color.FromArgb(15, 23, 42), // Deep Slate Navy
                 Padding = new Padding(0)
             };
             this.Controls.Add(pnlSidebar);
 
-            // Brand Header with guaranteed spacing (Zero Clipping)
+            // Brand Header in Sidebar (Separated Badge + Title for Absolute Rendering Stability)
             pnlBrand = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 85,
+                Height = 105,
                 BackColor = Color.FromArgb(15, 23, 42),
-                Padding = new Padding(20, 16, 20, 10)
+                Padding = new Padding(20, 20, 16, 10)
             };
+
+            pnlBrandTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 2,
+                BackColor = Color.Transparent
+            };
+            pnlBrandTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F)); // Logo badge column
+            pnlBrandTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));  // Brand text column
+            pnlBrandTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));            // VitalCheck Title
+            pnlBrandTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));            // Subtitle
+
+            lblLogoBadge = new Label
+            {
+                Text = "VC",
+                Size = new Size(36, 36),
+                BackColor = Color.FromArgb(13, 148, 136), // Vibrant Teal
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 11.5F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Margin = new Padding(0, 3, 8, 0)
+            };
+            pnlBrandTable.SetRowSpan(lblLogoBadge, 2);
 
             lblBrand = new Label
             {
-                Text = "⚡ VitalCheck",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                Text = "VitalCheck",
+                Font = new Font("Segoe UI", 17F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Dock = DockStyle.Top,
-                Height = 35,
-                TextAlign = ContentAlignment.MiddleLeft
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 2)
             };
 
             lblBrandSub = new Label
@@ -118,22 +148,30 @@ namespace VitalCheck.Views
                 Text = "Health & Fitness Diagnostic",
                 Font = new Font("Segoe UI", 8.5F),
                 ForeColor = Color.FromArgb(148, 163, 184),
-                Dock = DockStyle.Top,
-                Height = 22,
-                TextAlign = ContentAlignment.MiddleLeft
+                AutoSize = true,
+                Margin = new Padding(0)
             };
 
-            pnlBrand.Controls.Add(lblBrandSub);
-            pnlBrand.Controls.Add(lblBrand);
+            pnlBrandTable.Controls.Add(lblLogoBadge, 0, 0);
+            pnlBrandTable.Controls.Add(lblBrand, 1, 0);
+            pnlBrandTable.Controls.Add(lblBrandSub, 1, 1);
+            pnlBrand.Controls.Add(pnlBrandTable);
             pnlSidebar.Controls.Add(pnlBrand);
 
-            // User Profile Card
+            // User Profile Card Wrapper
+            pnlUserCardWrapper = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 85,
+                BackColor = Color.FromArgb(15, 23, 42),
+                Padding = new Padding(16, 5, 16, 12)
+            };
+
             pnlUserCard = new Panel
             {
-                Location = new Point(14, 95),
-                Size = new Size(232, 70),
+                Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(30, 41, 59),
-                Padding = new Padding(12, 10, 12, 10)
+                Padding = new Padding(14, 10, 14, 10)
             };
 
             lblUserName = new Label
@@ -141,8 +179,8 @@ namespace VitalCheck.Views
                 Text = _currentUser.FullName,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(10, 10),
-                Width = 210,
+                Dock = DockStyle.Top,
+                Height = 22,
                 AutoEllipsis = true
             };
 
@@ -151,51 +189,63 @@ namespace VitalCheck.Views
                 Text = _currentUser.IsInstructor ? "● Fitness Instructor" : "● Personal Account",
                 Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
                 ForeColor = _currentUser.IsInstructor ? Color.FromArgb(45, 212, 191) : Color.FromArgb(52, 211, 153),
-                Location = new Point(10, 36),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 20
             };
 
-            pnlUserCard.Controls.Add(lblUserName);
             pnlUserCard.Controls.Add(lblUserRole);
-            pnlSidebar.Controls.Add(pnlUserCard);
+            pnlUserCard.Controls.Add(lblUserName);
+            pnlUserCardWrapper.Controls.Add(pnlUserCard);
+            pnlSidebar.Controls.Add(pnlUserCardWrapper);
 
-            // Navigation Menu Buttons
-            int btnY = 185;
-            int btnHeight = 44;
-            int btnSpacing = 8;
+            // Navigation Container (Flow layout for perfect button spacing)
+            pnlNavContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(15, 23, 42),
+                Padding = new Padding(14, 10, 14, 10),
+                AutoScroll = true
+            };
 
-            btnNavDashboard = CreateNavButton("📊  Dashboard Overview", btnY);
+            int navY = 10;
+            int btnH = 46;
+            int btnGap = 8;
+
+            btnNavDashboard = CreateNavButton("📊  Dashboard Overview", navY);
             btnNavDashboard.Click += (s, e) => NavigateTo("Dashboard");
-            pnlSidebar.Controls.Add(btnNavDashboard);
+            pnlNavContainer.Controls.Add(btnNavDashboard);
 
-            btnY += btnHeight + btnSpacing;
-            btnNavAssessment = CreateNavButton("📋  Health Assessment", btnY);
+            navY += btnH + btnGap;
+            btnNavAssessment = CreateNavButton("📋  Health Assessment", navY);
             btnNavAssessment.Click += (s, e) => NavigateTo("Assessment");
-            pnlSidebar.Controls.Add(btnNavAssessment);
+            pnlNavContainer.Controls.Add(btnNavAssessment);
 
-            btnY += btnHeight + btnSpacing;
-            btnNavGoals = CreateNavButton("🎯  Fitness Goals", btnY);
+            navY += btnH + btnGap;
+            btnNavGoals = CreateNavButton("🎯  Fitness Goals", navY);
             btnNavGoals.Click += (s, e) => NavigateTo("Goals");
-            pnlSidebar.Controls.Add(btnNavGoals);
+            pnlNavContainer.Controls.Add(btnNavGoals);
 
-            btnY += btnHeight + btnSpacing;
-            btnNavProgress = CreateNavButton("📈  Progress Tracking", btnY);
+            navY += btnH + btnGap;
+            btnNavProgress = CreateNavButton("📈  Progress Tracking", navY);
             btnNavProgress.Click += (s, e) => NavigateTo("Progress");
-            pnlSidebar.Controls.Add(btnNavProgress);
+            pnlNavContainer.Controls.Add(btnNavProgress);
 
-            // Client Management - visible only for Instructors
-            btnY += btnHeight + btnSpacing;
-            btnNavClients = CreateNavButton("👥  Client Directory", btnY);
-            btnNavClients.Visible = _currentUser.IsInstructor;
-            btnNavClients.Click += (s, e) => NavigateTo("Clients");
-            pnlSidebar.Controls.Add(btnNavClients);
+            if (_currentUser.IsInstructor)
+            {
+                navY += btnH + btnGap;
+                btnNavClients = CreateNavButton("👥  Client Directory", navY);
+                btnNavClients.Click += (s, e) => NavigateTo("Clients");
+                pnlNavContainer.Controls.Add(btnNavClients);
+            }
+
+            pnlSidebar.Controls.Add(pnlNavContainer);
 
             // Logout Button at bottom of sidebar
             btnNavLogout = new Button
             {
                 Text = "🚪  Sign Out",
                 Dock = DockStyle.Bottom,
-                Height = 52,
+                Height = 54,
                 BackColor = Color.FromArgb(30, 41, 59),
                 ForeColor = Color.FromArgb(248, 113, 113), // Soft Red
                 FlatStyle = FlatStyle.Flat,
@@ -212,7 +262,7 @@ namespace VitalCheck.Views
                 Dock = DockStyle.Top,
                 Height = 65,
                 BackColor = Color.White,
-                Padding = new Padding(25, 12, 25, 12)
+                Padding = new Padding(24, 12, 24, 12)
             };
             this.Controls.Add(pnlTopBar);
 
@@ -221,12 +271,22 @@ namespace VitalCheck.Views
                 Text = "Dashboard Overview",
                 Font = new Font("Segoe UI", 14F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(20, 18),
+                Dock = DockStyle.Left,
+                TextAlign = ContentAlignment.MiddleLeft,
                 AutoSize = true
             };
             pnlTopBar.Controls.Add(lblPageTitle);
 
-            // Active Subject Status / Dropdown on Top Bar
+            // Right side of top bar: Active Subject Status & Dropdown
+            pnlTopRight = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                Padding = new Padding(0, 6, 0, 0)
+            };
+
             if (_currentUser.IsInstructor)
             {
                 Label lblActivePrefix = new Label
@@ -234,13 +294,12 @@ namespace VitalCheck.Views
                     Text = "Active Client:",
                     Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                     ForeColor = Color.FromArgb(71, 85, 105),
-                    Location = new Point(560, 22),
-                    AutoSize = true
+                    AutoSize = true,
+                    Margin = new Padding(0, 6, 8, 0)
                 };
 
                 cmbClientPicker = new ComboBox
                 {
-                    Location = new Point(650, 18),
                     Width = 280,
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     Font = new Font("Segoe UI", 9.5F)
@@ -248,8 +307,8 @@ namespace VitalCheck.Views
                 PopulateInstructorClientPicker();
                 cmbClientPicker.SelectedIndexChanged += CmbClientPicker_SelectedIndexChanged;
 
-                pnlTopBar.Controls.Add(lblActivePrefix);
-                pnlTopBar.Controls.Add(cmbClientPicker);
+                pnlTopRight.Controls.Add(lblActivePrefix);
+                pnlTopRight.Controls.Add(cmbClientPicker);
             }
             else
             {
@@ -258,11 +317,12 @@ namespace VitalCheck.Views
                     Text = _activeClient != null ? $"Active Subject: {_activeClient.FullName} (Age: {_activeClient.Age}, {_activeClient.Sex})" : "Active Subject: Loading...",
                     Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                     ForeColor = Color.FromArgb(13, 148, 136),
-                    Location = new Point(560, 22),
-                    AutoSize = true
+                    AutoSize = true,
+                    Margin = new Padding(0, 6, 0, 0)
                 };
-                pnlTopBar.Controls.Add(lblActiveClientNotice);
+                pnlTopRight.Controls.Add(lblActiveClientNotice);
             }
+            pnlTopBar.Controls.Add(pnlTopRight);
 
             // 3. Central Content Panel
             pnlContent = new Panel
@@ -280,25 +340,26 @@ namespace VitalCheck.Views
             Button btn = new Button
             {
                 Text = title,
-                Location = new Point(12, yPos),
-                Size = new Size(236, 44),
+                Location = new Point(0, yPos),
+                Size = new Size(242, 46),
                 BackColor = Color.Transparent,
                 ForeColor = Color.FromArgb(203, 213, 225),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F),
                 TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(12, 0, 0, 0),
+                Padding = new Padding(14, 0, 0, 0),
                 Cursor = Cursors.Hand
             };
             btn.FlatAppearance.BorderSize = 0;
             return btn;
         }
 
-        private void HighlightNavButton(Button activeButton)
+        private void HighlightNavButton(Button? activeButton)
         {
             Button[] buttons = { btnNavDashboard, btnNavAssessment, btnNavGoals, btnNavProgress, btnNavClients };
             foreach (var b in buttons)
             {
+                if (b == null) continue;
                 if (b == activeButton)
                 {
                     b.BackColor = Color.FromArgb(13, 148, 136); // Teal highlight
