@@ -68,23 +68,31 @@ namespace VitalCheck.Views
             this.AutoScroll = true;
             this.Padding = new Padding(25, 20, 25, 25);
 
-            // 1. Top Header Banner
+            // 1. Top Header Banner (DPI-Safe Container)
             pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 75,
+                Height = 84,
                 BackColor = Color.White,
-                Padding = new Padding(24, 14, 24, 12),
+                Padding = new Padding(24, 16, 24, 14),
                 Margin = new Padding(0, 0, 0, 16)
+            };
+
+            FlowLayoutPanel pnlHeaderFlow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.Transparent
             };
 
             Label lblTitle = new Label
             {
                 Text = "Client Directory & Management",
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(20, 12),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 4)
             };
 
             Label lblSubtitle = new Label
@@ -92,12 +100,13 @@ namespace VitalCheck.Views
                 Text = "Register clients, update demographic information, and switch active subjects.",
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(13, 148, 136),
-                Location = new Point(22, 42),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0)
             };
 
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(lblSubtitle);
+            pnlHeaderFlow.Controls.Add(lblTitle);
+            pnlHeaderFlow.Controls.Add(lblSubtitle);
+            pnlHeader.Controls.Add(pnlHeaderFlow);
             this.Controls.Add(pnlHeader);
 
             // 2. Responsive 2-Column Split: Table (60%) on Left, Add/Edit Form (40%) on Right
