@@ -24,25 +24,48 @@ namespace VitalCheck.Models
 
         /// <summary>
         /// Calculates progress towards goal as an integer percentage (0 to 100).
-        /// Handles both increasing goals (e.g. running 10 km) and decreasing goals (e.g. weight loss from 85kg to 75kg).
+        /// Handles both increasing goals (e.g. running 10 km, 10,000 steps)
+        /// and decreasing goals (e.g. weight reduction from 85 kg to 75 kg).
         /// </summary>
-        public int CalculateProgressPercentage(decimal? initialValue = null)
+        public int CalculateProgressPercentage(decimal? baselineStartingValue = null)
         {
-            if (Status == "Completed") return 100;
-            if (TargetValue == 0) return 0;
+            if (string.Equals(Status, "Completed", StringComparison.OrdinalIgnoreCase)) return 100;
+            if (TargetValue <= 0) return 0;
 
-            if (initialValue.HasValue && initialValue.Value != TargetValue)
+            if (baselineStartingValue.HasValue && baselineStartingValue.Value != TargetValue)
             {
-                decimal totalDistance = Math.Abs(TargetValue - initialValue.Value);
-                decimal progressDistance = Math.Abs(CurrentValue - initialValue.Value);
-                if (totalDistance == 0) return 100;
-                int percent = (int)Math.Round((progressDistance / totalDistance) * 100m);
-                return Math.Clamp(percent, 0, 100);
+                decimal totalSpan = Math.Abs(TargetValue - baselineStartingValue.Value);
+                decimal progressSpan = Math.Abs(CurrentValue - baselineStartingValue.Value);
+
+                if (totalSpan <= 0) return 100;
+                int pct = (int)Math.Round((progressSpan / totalSpan) * 100m);
+                return Math.Clamp(pct, 0, 100);
             }
 
-            // Simple direct proportion: Current / Target
-            int directPercent = (int)Math.Round((CurrentValue / TargetValue) * 100m);
-            return Math.Clamp(directPercent, 0, 100);
+            // If decreasing target (e.g. target weight 70 kg, current 70 kg or less)
+            if (CurrentValue == TargetValue)
+            {
+                return 100;
+            }
+
+            if (TargetValue > 0 && CurrentValue > 0)
+            {
+                // Standard proportional percentage
+                if (CurrentValue >= TargetValue && !string.Equals(Unit, "kg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return 100;
+                }
+
+                if (string.Equals(Unit, "kg", StringComparison.OrdinalIgnoreCase) && CurrentValue <= TargetValue)
+                {
+                    return 100;
+                }
+
+                int direct = (int)Math.Round((CurrentValue / TargetValue) * 100m);
+                return Math.Clamp(direct, 0, 100);
+            }
+
+            return 0;
         }
 
         public FitnessGoal()
