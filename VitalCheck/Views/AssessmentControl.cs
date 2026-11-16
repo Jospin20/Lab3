@@ -65,23 +65,31 @@ namespace VitalCheck.Views
             this.AutoScroll = true;
             this.Padding = new Padding(25, 20, 25, 25);
 
-            // 1. Top Header Banner
+            // 1. Top Header Banner (DPI-Safe Container)
             pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 75,
+                Height = 84,
                 BackColor = Color.White,
-                Padding = new Padding(24, 14, 24, 12),
+                Padding = new Padding(24, 16, 24, 14),
                 Margin = new Padding(0, 0, 0, 16)
+            };
+
+            FlowLayoutPanel pnlHeaderFlow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.Transparent
             };
 
             Label lblTitle = new Label
             {
                 Text = "Health & Fitness Diagnostic Assessment",
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(20, 12),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 4)
             };
 
             string clientText = _activeClient != null
@@ -93,12 +101,13 @@ namespace VitalCheck.Views
                 Text = clientText,
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(13, 148, 136),
-                Location = new Point(22, 42),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0)
             };
 
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(lblClientInfo);
+            pnlHeaderFlow.Controls.Add(lblTitle);
+            pnlHeaderFlow.Controls.Add(lblClientInfo);
+            pnlHeader.Controls.Add(pnlHeaderFlow);
             this.Controls.Add(pnlHeader);
 
             // 2. Responsive 2-Column Split
@@ -150,12 +159,12 @@ namespace VitalCheck.Views
             };
             pnlFormCard.Controls.Add(lblHeading);
 
-            int curY = 48;
-            int step = 62;
+            int curY = 46;
+            int step = 68;
 
-            // Age & Biological Sex
+            // Row 1: Age & Biological Sex
             Label lblAge = new Label { Text = "Age (Years):", Location = new Point(15, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            numAge = new NumericUpDown { Location = new Point(15, curY + 22), Width = 165, Minimum = 5, Maximum = 120, Value = 25, Font = new Font("Segoe UI", 10F) };
+            numAge = new NumericUpDown { Location = new Point(15, curY + 22), Width = 175, Minimum = 5, Maximum = 120, Value = 25, Font = new Font("Segoe UI", 10F) };
             numAge.ValueChanged += (s, e) => UpdateLiveDiagnostic();
 
             Label lblSex = new Label { Text = "Biological Sex:", Location = new Point(205, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
@@ -169,28 +178,30 @@ namespace VitalCheck.Views
             pnlFormCard.Controls.Add(lblSex);
             pnlFormCard.Controls.Add(cmbSex);
 
-            // Height (cm)
+            // Row 2: Height (cm) & Weight (kg) — Completely Non-Overlapping Columns
             curY += step;
             Label lblHeight = new Label { Text = "Height (cm):", Location = new Point(15, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            numHeight = new NumericUpDown { Location = new Point(15, curY + 22), Width = 165, Minimum = 50, Maximum = 260, DecimalPlaces = 1, Value = 175, Font = new Font("Segoe UI", 10F) };
-            lblHeightMeters = new Label { Text = "= 1.75 m", Location = new Point(188, curY + 25), AutoSize = true, ForeColor = Color.FromArgb(100, 116, 139) };
+            numHeight = new NumericUpDown { Location = new Point(15, curY + 22), Width = 175, Minimum = 50, Maximum = 260, DecimalPlaces = 1, Value = 175, Font = new Font("Segoe UI", 10F) };
+            lblHeightMeters = new Label { Text = "Equivalent: 1.75 m", Location = new Point(15, curY + 48), AutoSize = true, ForeColor = Color.FromArgb(100, 116, 139), Font = new Font("Segoe UI", 8.5F) };
             numHeight.ValueChanged += (s, e) => {
-                lblHeightMeters.Text = $"= {(numHeight.Value / 100m):F2} m";
+                lblHeightMeters.Text = $"Equivalent: {(numHeight.Value / 100m):F2} m";
                 UpdateLiveDiagnostic();
             };
+
+            Label lblWeight = new Label { Text = "Body Weight (kg):", Location = new Point(205, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            numWeight = new NumericUpDown { Location = new Point(205, curY + 22), Width = 175, Minimum = 20, Maximum = 350, DecimalPlaces = 1, Value = 70, Font = new Font("Segoe UI", 10F) };
+            Label lblWeightHelper = new Label { Text = "Standard unit: kg", Location = new Point(205, curY + 48), AutoSize = true, ForeColor = Color.FromArgb(100, 116, 139), Font = new Font("Segoe UI", 8.5F) };
+            numWeight.ValueChanged += (s, e) => UpdateLiveDiagnostic();
+
             pnlFormCard.Controls.Add(lblHeight);
             pnlFormCard.Controls.Add(numHeight);
             pnlFormCard.Controls.Add(lblHeightMeters);
-
-            // Weight (kg)
-            Label lblWeight = new Label { Text = "Body Weight (kg):", Location = new Point(205, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            numWeight = new NumericUpDown { Location = new Point(205, curY + 22), Width = 175, Minimum = 20, Maximum = 350, DecimalPlaces = 1, Value = 70, Font = new Font("Segoe UI", 10F) };
-            numWeight.ValueChanged += (s, e) => UpdateLiveDiagnostic();
             pnlFormCard.Controls.Add(lblWeight);
             pnlFormCard.Controls.Add(numWeight);
+            pnlFormCard.Controls.Add(lblWeightHelper);
 
-            // Physical Activity
-            curY += step;
+            // Row 3: Physical Activity
+            curY += step + 8;
             Label lblAct = new Label { Text = "Physical Activity Level:", Location = new Point(15, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cmbActivity = new ComboBox { Location = new Point(15, curY + 22), Width = 365, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
             cmbActivity.Items.AddRange(new object[] { "Sedentary", "Lightly Active", "Moderately Active", "Very Active" });
@@ -199,23 +210,26 @@ namespace VitalCheck.Views
             pnlFormCard.Controls.Add(lblAct);
             pnlFormCard.Controls.Add(cmbActivity);
 
-            // Daily Sleep Hours
+            // Row 4: Daily Sleep Hours & Daily Water Intake
             curY += step;
             Label lblSleep = new Label { Text = "Daily Sleep (Hours):", Location = new Point(15, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            numSleep = new NumericUpDown { Location = new Point(15, curY + 22), Width = 165, Minimum = 0, Maximum = 24, DecimalPlaces = 1, Value = 8.0m, Font = new Font("Segoe UI", 10F) };
+            numSleep = new NumericUpDown { Location = new Point(15, curY + 22), Width = 175, Minimum = 0, Maximum = 24, DecimalPlaces = 1, Value = 8.0m, Font = new Font("Segoe UI", 10F) };
+            Label lblSleepHelper = new Label { Text = "Standard: 7–9 hrs", Location = new Point(15, curY + 48), AutoSize = true, ForeColor = Color.FromArgb(100, 116, 139), Font = new Font("Segoe UI", 8.5F) };
             numSleep.ValueChanged += (s, e) => UpdateLiveDiagnostic();
             pnlFormCard.Controls.Add(lblSleep);
             pnlFormCard.Controls.Add(numSleep);
+            pnlFormCard.Controls.Add(lblSleepHelper);
 
-            // Daily Water Intake (Litres)
             Label lblWater = new Label { Text = "Daily Water (Litres):", Location = new Point(205, curY), AutoSize = true, ForeColor = Color.FromArgb(71, 85, 105), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             numWater = new NumericUpDown { Location = new Point(205, curY + 22), Width = 175, Minimum = 0, Maximum = 15, DecimalPlaces = 1, Value = 2.5m, Font = new Font("Segoe UI", 10F) };
+            Label lblWaterHelper = new Label { Text = "Standard: 2–3 L", Location = new Point(205, curY + 48), AutoSize = true, ForeColor = Color.FromArgb(100, 116, 139), Font = new Font("Segoe UI", 8.5F) };
             numWater.ValueChanged += (s, e) => UpdateLiveDiagnostic();
             pnlFormCard.Controls.Add(lblWater);
             pnlFormCard.Controls.Add(numWater);
+            pnlFormCard.Controls.Add(lblWaterHelper);
 
-            // Buttons
-            curY += step + 15;
+            // Row 5: Action Buttons
+            curY += step + 16;
             btnSaveAssessment = new Button
             {
                 Text = "✓ Save Assessment Record",
@@ -244,7 +258,7 @@ namespace VitalCheck.Views
             btnReset.FlatAppearance.BorderSize = 0;
             btnReset.Click += (s, e) => PopulateDefaults();
 
-            curY += 50;
+            curY += 52;
             lblStatusMessage = new Label
             {
                 Location = new Point(15, curY),
@@ -335,7 +349,7 @@ namespace VitalCheck.Views
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = Color.FromArgb(248, 250, 252),
-                Font = new Font("Consolas", 9F),
+                Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(30, 41, 59),
                 BorderStyle = BorderStyle.FixedSingle
             };
