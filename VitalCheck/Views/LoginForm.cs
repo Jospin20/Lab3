@@ -52,66 +52,94 @@ namespace VitalCheck.Views
         private void InitializeComponent()
         {
             this.Text = "VitalCheck — Health & Fitness Diagnostic";
-            this.ClientSize = new Size(540, 710);
+            this.ClientSize = new Size(560, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.BackColor = Color.FromArgb(241, 245, 249); // Clean slate background
             this.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
 
-            // 1. Top Header Banner (Fully docked and centered for zero text clipping)
+            // 1. Top Header Banner (Engineered for zero text clipping under any DPI scaling)
             pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 135,
+                Height = 150,
                 BackColor = Color.FromArgb(15, 23, 42), // Deep Navy Slate
-                Padding = new Padding(20, 20, 20, 10)
+                Padding = new Padding(20, 24, 20, 16)
+            };
+
+            TableLayoutPanel pnlHeaderTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.Transparent
+            };
+            pnlHeaderTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            pnlHeaderTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            pnlHeaderTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            // Brand Title Row: Icon Badge + "VitalCheck" (Horizontally Centered)
+            FlowLayoutPanel pnlBrandRow = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = Color.Transparent,
+                Anchor = AnchorStyles.None,
+                Margin = new Padding(0, 0, 0, 6)
             };
 
             lblBrandIcon = new Label
             {
-                Text = "⚡",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(13, 148, 136), // Vibrant Teal
-                Dock = DockStyle.Top,
-                Height = 35,
-                TextAlign = ContentAlignment.MiddleCenter
+                Text = "VC",
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(13, 148, 136), // Vibrant Teal
+                Size = new Size(38, 38),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Margin = new Padding(0, 2, 10, 0)
             };
 
             lblAppTitle = new Label
             {
                 Text = "VitalCheck",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Dock = DockStyle.Top,
-                Height = 40,
-                TextAlign = ContentAlignment.MiddleCenter
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0)
             };
+
+            pnlBrandRow.Controls.Add(lblBrandIcon);
+            pnlBrandRow.Controls.Add(lblAppTitle);
 
             lblAppSubtitle = new Label
             {
                 Text = "Personal Health & Fitness Diagnostic Platform",
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(148, 163, 184),
-                Dock = DockStyle.Top,
-                Height = 25,
-                TextAlign = ContentAlignment.MiddleCenter
+                AutoSize = true,
+                Anchor = AnchorStyles.None,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Margin = new Padding(0)
             };
 
-            pnlHeader.Controls.Add(lblAppSubtitle);
-            pnlHeader.Controls.Add(lblAppTitle);
-            pnlHeader.Controls.Add(lblBrandIcon);
+            pnlHeaderTable.Controls.Add(pnlBrandRow, 0, 0);
+            pnlHeaderTable.Controls.Add(lblAppSubtitle, 0, 1);
+            pnlHeader.Controls.Add(pnlHeaderTable);
             this.Controls.Add(pnlHeader);
 
             // 2. Center Card Container
             pnlCenterCard = new Panel
             {
-                Size = new Size(460, 525),
-                Location = new Point(40, 155),
+                Size = new Size(470, 545),
+                Location = new Point((this.ClientSize.Width - 470) / 2, 168),
                 BackColor = Color.White,
                 Padding = new Padding(25, 20, 25, 20)
             };
             this.Controls.Add(pnlCenterCard);
+            pnlCenterCard.BringToFront();
 
             // Segmented View Switcher (Sign In vs Register)
             pnlSegmentedNav = new Panel
@@ -126,7 +154,7 @@ namespace VitalCheck.Views
             {
                 Text = "Sign In",
                 Dock = DockStyle.Left,
-                Width = 202,
+                Width = 207,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.White,
                 ForeColor = Color.FromArgb(15, 23, 42),
@@ -140,7 +168,7 @@ namespace VitalCheck.Views
             {
                 Text = "Create Account",
                 Dock = DockStyle.Right,
-                Width = 202,
+                Width = 207,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.Transparent,
                 ForeColor = Color.FromArgb(100, 116, 139),
