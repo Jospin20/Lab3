@@ -73,14 +73,14 @@ namespace VitalCheck.Views
             this.AutoScroll = true;
 
             int leftMargin = 20;
-            int curY = 15;
+            int curY = 20;
 
             // 1. Welcome GroupBox
             grpWelcome = new GroupBox
             {
                 Text = " Welcome ",
                 Location = new Point(leftMargin, curY),
-                Size = new Size(840, 75),
+                Size = new Size(850, 80),
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 41, 59)
             };
@@ -112,7 +112,8 @@ namespace VitalCheck.Views
             this.Controls.Add(grpWelcome);
 
             // 2. Row of 3 Summary Boxes (BMI, Stats, Goals)
-            curY += 85;
+            // Comfortable 15px gap below Welcome box
+            curY += 95;
             int boxWidth = 270;
             int boxGap = 15;
 
