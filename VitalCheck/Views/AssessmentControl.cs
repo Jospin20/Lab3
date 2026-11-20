@@ -110,10 +110,10 @@ namespace VitalCheck.Views
             // Height & Weight
             inputY += step;
             lblHeight = new Label { Text = "Height (cm):", Location = new Point(15, inputY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
+            lblHeightMeters = new Label { Text = "(= 1.75 m)", Location = new Point(95, inputY), AutoSize = true, Font = new Font("Segoe UI", 8.5F, FontStyle.Italic), ForeColor = Color.FromArgb(13, 148, 136) };
             numHeight = new NumericUpDown { Location = new Point(15, inputY + 20), Width = 165, Minimum = 50, Maximum = 250, DecimalPlaces = 1, Value = 175, Font = new Font("Segoe UI", 9.5F) };
-            lblHeightMeters = new Label { Text = "= 1.75 m", Location = new Point(15, inputY + 44), AutoSize = true, Font = new Font("Segoe UI", 8F), ForeColor = Color.FromArgb(100, 116, 139) };
             numHeight.ValueChanged += (s, e) => {
-                lblHeightMeters.Text = $"= {(numHeight.Value / 100m):F2} m";
+                lblHeightMeters.Text = $"(= {(numHeight.Value / 100m):F2} m)";
                 UpdateLiveCalculations();
             };
 
