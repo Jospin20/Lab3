@@ -47,13 +47,40 @@ namespace VitalCheck.Views
 
         public MainDashboardForm(User user)
         {
-            _currentUser = user;
-            _userController = new UserController();
-            _clientController = new ClientController();
+            // === INITIALIZE DASHBOARD ===
+            // Try to initialize controllers and set up UI
+            // If initialization fails, user sees error message and form doesn't crash
+            try
+            {
+                _currentUser = user;
 
-            InitializeActiveClient();
-            InitializeComponent();
-            NavigateTo("Dashboard");
+                // === INITIALIZE CONTROLLERS ===
+                // Create instances for managing users and clients
+                _userController = new UserController();
+                _clientController = new ClientController();
+
+                // === LOAD ACTIVE CLIENT CONTEXT ===
+                // Set up the active client/profile for this session
+                InitializeActiveClient();
+
+                // === BUILD UI COMPONENTS ===
+                // Construct all form visual elements
+                InitializeComponent();
+
+                // === NAVIGATE TO INITIAL VIEW ===
+                // Show Dashboard as the starting page
+                NavigateTo("Dashboard");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error initializing dashboard: {ex.Message}\n\nPlease try logging in again.",
+                    "Initialization Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                throw; // Re-throw to allow form to fail gracefully
+            }
         }
 
         /// <summary>
@@ -63,19 +90,31 @@ namespace VitalCheck.Views
         /// </summary>
         private void InitializeActiveClient()
         {
-            if (!_currentUser.IsInstructor)
+            try
             {
-                // Individual user: get their own profile
-                _activeClient = _userController.GetClientProfileByUserId(_currentUser.UserID);
-            }
-            else
-            {
-                // Instructor: get their first client if one exists
-                List<ClientProfile> clients = _clientController.GetClientsByInstructor(_currentUser.UserID);
-                if (clients.Count > 0)
+                if (!_currentUser.IsInstructor)
                 {
-                    _activeClient = clients[0];
+                    // === INDIVIDUAL USER CONTEXT ===
+                    // Get the user's own profile - may be null if not yet created
+                    _activeClient = _userController.GetClientProfileByUserId(_currentUser.UserID);
                 }
+                else
+                {
+                    // === INSTRUCTOR USER CONTEXT ===
+                    // Get list of clients managed by this instructor
+                    List<ClientProfile> clients = _clientController.GetClientsByInstructor(_currentUser.UserID);
+                    if (clients != null && clients.Count > 0)
+                    {
+                        // Set first client as active, may be null if instructor has no clients
+                        _activeClient = clients[0];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash - form can still work without active client
+                System.Diagnostics.Debug.WriteLine($"Error initializing active client: {ex.Message}");
+                _activeClient = null; // Ensure null state on error
             }
         }
 
@@ -97,27 +136,27 @@ namespace VitalCheck.Views
             pnlTopBar = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
+                Height = 80, // Increased from 70 to 80 for comfortable vertical breathing room
                 BackColor = Color.FromArgb(15, 23, 42) // Slate Navy
             };
 
-            // App title - large, bold, white
+            // App title - large, bold, white with clear separation from subtitle
             lblAppTitle = new Label
             {
                 Text = "VitalCheck",
                 Font = new Font("Segoe UI", 16F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(20, 12),
+                Location = new Point(20, 14),
                 AutoSize = true
             };
 
-            // App subtitle - smaller, light gray
+            // App subtitle - placed comfortably below title so text never collides
             lblAppSub = new Label
             {
                 Text = "Health & Fitness Diagnostic Suite",
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(22, 42),
+                Location = new Point(22, 48), // 34px below title top -> no overlap
                 AutoSize = true
             };
 
@@ -184,11 +223,13 @@ namespace VitalCheck.Views
             // === CENTRAL CONTENT PANEL ===
             // Main viewing area where different views are loaded (Dashboard, Assessment, Goals, etc.)
             // This panel will be filled dynamically based on navigation selection
+            // Added padding to prevent content from touching the top bar
 
             pnlContent = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(245, 247, 250)
+                BackColor = Color.FromArgb(245, 247, 250),
+                Padding = new Padding(0, 15, 0, 0) // Top padding to separate from top bar
             };
             this.Controls.Add(pnlContent);
             pnlContent.BringToFront();
@@ -230,7 +271,7 @@ namespace VitalCheck.Views
             btnLogout = new Button
             {
                 Text = "Sign Out",
-                Size = new Size(90, 32),
+                Size = new Size(90, 34),
                 BackColor = Color.FromArgb(51, 65, 85), // Dark gray
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -238,7 +279,7 @@ namespace VitalCheck.Views
                 Cursor = Cursors.Hand,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
-            btnLogout.Location = new Point(this.ClientSize.Width - 110, 19);
+            btnLogout.Location = new Point(this.ClientSize.Width - 110, 23);
             btnLogout.FlatAppearance.BorderSize = 0;
             btnLogout.Click += BtnLogout_Click;
             pnlTopBar.Controls.Add(btnLogout);
@@ -257,7 +298,7 @@ namespace VitalCheck.Views
                 MaximumSize = new Size(280, 0), // Constrain width to prevent overflow
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
-            lblUserInfo.Location = new Point(this.ClientSize.Width - 400, 15);
+            lblUserInfo.Location = new Point(this.ClientSize.Width - 410, 18);
             pnlTopBar.Controls.Add(lblUserInfo);
 
             // === ACTIVE CLIENT INFO (varies by user type) ===
@@ -276,7 +317,7 @@ namespace VitalCheck.Views
                     AutoSize = true,
                     MaximumSize = new Size(150, 0), // Constrain width
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                    Location = new Point(this.ClientSize.Width - 400, 38)
+                    Location = new Point(this.ClientSize.Width - 410, 46)
                 };
                 pnlTopBar.Controls.Add(lblActiveClient);
 
@@ -287,7 +328,7 @@ namespace VitalCheck.Views
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     Font = new Font("Segoe UI", 9F),
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                    Location = new Point(this.ClientSize.Width - 310, 34)
+                    Location = new Point(this.ClientSize.Width - 320, 42)
                 };
                 PopulateClientPicker();
                 cmbClientPicker.SelectedIndexChanged += CmbClientPicker_SelectedIndexChanged;
@@ -307,7 +348,7 @@ namespace VitalCheck.Views
                     AutoSize = true,
                     MaximumSize = new Size(280, 0), // Constrain width to prevent text clipping
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                    Location = new Point(this.ClientSize.Width - 400, 38)
+                    Location = new Point(this.ClientSize.Width - 410, 46)
                 };
                 pnlTopBar.Controls.Add(lblActiveClient);
             }
@@ -423,11 +464,16 @@ namespace VitalCheck.Views
 
         private void HighlightNavButton(string activeView)
         {
+            // === BUTTON HIGHLIGHTING LOGIC ===
+            // Highlight the active navigation button with teal background
+            // Skip null buttons (btnNavClients is null for non-instructor users)
+
             Button[] buttons = { btnNavDashboard, btnNavAssessment, btnNavGoals, btnNavProgress, btnNavClients };
             string[] names = { "Dashboard", "Assessment", "Goals", "Progress", "Clients" };
 
             for (int i = 0; i < buttons.Length; i++)
             {
+                // Skip null buttons (important: btnNavClients is only created for instructors)
                 if (buttons[i] == null) continue;
 
                 if (names[i] == activeView)
