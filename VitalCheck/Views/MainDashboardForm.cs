@@ -81,7 +81,8 @@ namespace VitalCheck.Views
 
         private void InitializeComponent()
         {
-            // Form setup
+            // === FORM SETUP ===
+            // Configure the main dashboard window: resizable, center screen, light background
             this.Text = "VitalCheck - Health & Fitness Diagnostic";
             this.ClientSize = new Size(1100, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -89,7 +90,10 @@ namespace VitalCheck.Views
             this.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
             this.BackColor = Color.FromArgb(245, 247, 250);
 
-            // 1. Top Header Bar
+            // === TOP HEADER BAR ===
+            // Navy-colored bar with application branding and user controls
+            // Contains: App title/subtitle, user info, client selector (for instructors), logout button
+
             pnlTopBar = new Panel
             {
                 Dock = DockStyle.Top,
@@ -97,6 +101,7 @@ namespace VitalCheck.Views
                 BackColor = Color.FromArgb(15, 23, 42) // Slate Navy
             };
 
+            // App title - large, bold, white
             lblAppTitle = new Label
             {
                 Text = "VitalCheck",
@@ -106,6 +111,7 @@ namespace VitalCheck.Views
                 AutoSize = true
             };
 
+            // App subtitle - smaller, light gray
             lblAppSub = new Label
             {
                 Text = "Health & Fitness Diagnostic Suite",
@@ -118,12 +124,16 @@ namespace VitalCheck.Views
             pnlTopBar.Controls.Add(lblAppTitle);
             pnlTopBar.Controls.Add(lblAppSub);
 
-            // Top Bar Right: User info, client picker, logout
+            // === TOP BAR RIGHT SECTION ===
+            // User info, client picker (instructors only), and logout button
             BuildTopBarRight();
 
             this.Controls.Add(pnlTopBar);
 
-            // 2. Left Sidebar Navigation
+            // === LEFT SIDEBAR NAVIGATION PANEL ===
+            // Dark slate panel with vertical navigation buttons
+            // Contains: Dashboard, Health Assessment, Fitness Goals, Progress History, Manage Clients (instructors only)
+
             pnlSidebar = new Panel
             {
                 Dock = DockStyle.Left,
@@ -131,30 +141,36 @@ namespace VitalCheck.Views
                 BackColor = Color.FromArgb(30, 41, 59) // Dark Slate
             };
 
+            // Layout navigation buttons vertically with consistent spacing
             int y = 20;
             int btnHeight = 44;
             int gap = 8;
 
+            // === DASHBOARD NAVIGATION ===
             btnNavDashboard = CreateNavButton("Dashboard", y);
             btnNavDashboard.Click += (s, e) => NavigateTo("Dashboard");
             pnlSidebar.Controls.Add(btnNavDashboard);
 
+            // === ASSESSMENT NAVIGATION ===
             y += btnHeight + gap;
             btnNavAssessment = CreateNavButton("Health Assessment", y);
             btnNavAssessment.Click += (s, e) => NavigateTo("Assessment");
             pnlSidebar.Controls.Add(btnNavAssessment);
 
+            // === GOALS NAVIGATION ===
             y += btnHeight + gap;
             btnNavGoals = CreateNavButton("Fitness Goals", y);
             btnNavGoals.Click += (s, e) => NavigateTo("Goals");
             pnlSidebar.Controls.Add(btnNavGoals);
 
+            // === PROGRESS NAVIGATION ===
             y += btnHeight + gap;
             btnNavProgress = CreateNavButton("Progress History", y);
             btnNavProgress.Click += (s, e) => NavigateTo("Progress");
             pnlSidebar.Controls.Add(btnNavProgress);
 
-            // Client Management button is only visible to Fitness Instructors
+            // === CLIENT MANAGEMENT (Instructors Only) ===
+            // Only visible to fitness instructors managing multiple clients
             if (_currentUser.IsInstructor)
             {
                 y += btnHeight + gap;
@@ -165,7 +181,10 @@ namespace VitalCheck.Views
 
             this.Controls.Add(pnlSidebar);
 
-            // 3. Central Content Panel
+            // === CENTRAL CONTENT PANEL ===
+            // Main viewing area where different views are loaded (Dashboard, Assessment, Goals, etc.)
+            // This panel will be filled dynamically based on navigation selection
+
             pnlContent = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -176,38 +195,43 @@ namespace VitalCheck.Views
         }
 
         /// <summary>
-        /// Helper to create a consistent navigation button.
+        /// CreateNavButton - Helper method to create consistent navigation sidebar buttons.
+        /// Returns a styled button with left-aligned text, transparent background, and hover effects.
         /// </summary>
         private Button CreateNavButton(string text, int top)
         {
+            // Create a flat, transparent button with light gray text
             Button btn = new Button
             {
                 Text = text,
                 Location = new Point(10, top),
                 Size = new Size(190, 44),
                 BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(203, 213, 225),
+                ForeColor = Color.FromArgb(203, 213, 225), // Light gray text
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(12, 0, 0, 0),
+                TextAlign = ContentAlignment.MiddleLeft, // Left-align text
+                Padding = new Padding(12, 0, 0, 0), // Indent text slightly
                 Cursor = Cursors.Hand
             };
-            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.BorderSize = 0; // No border for flat appearance
             return btn;
         }
 
         /// <summary>
-        /// Populates the right side of the top header bar with user identity and client switcher.
+        /// BuildTopBarRight - Populates the right side of the top header bar.
+        /// Displays: User identity, active client info (and selector for instructors), and logout button.
         /// </summary>
         private void BuildTopBarRight()
         {
-            // Logout button on far right
+            // === LOGOUT BUTTON ===
+            // Positioned at far right, anchored so it stays right-aligned when form resizes
+
             btnLogout = new Button
             {
                 Text = "Sign Out",
                 Size = new Size(90, 32),
-                BackColor = Color.FromArgb(51, 65, 85),
+                BackColor = Color.FromArgb(51, 65, 85), // Dark gray
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
@@ -219,32 +243,44 @@ namespace VitalCheck.Views
             btnLogout.Click += BtnLogout_Click;
             pnlTopBar.Controls.Add(btnLogout);
 
-            // User identity label
+            // === USER INFORMATION LABEL ===
+            // Displays: "User: [Full Name] ([Role])"
+            // Example: "User: John Doe (Individual)" or "User: Jane Smith (Instructor)"
+            // Positioned right of center, anchored to right side
+
             lblUserInfo = new Label
             {
                 Text = $"User: {_currentUser.FullName} ({_currentUser.UserRole})",
-                ForeColor = Color.FromArgb(226, 232, 240),
+                ForeColor = Color.FromArgb(226, 232, 240), // Light silver
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 AutoSize = true,
+                MaximumSize = new Size(280, 0), // Constrain width to prevent overflow
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
             lblUserInfo.Location = new Point(this.ClientSize.Width - 400, 15);
             pnlTopBar.Controls.Add(lblUserInfo);
 
-            // Active client notice or dropdown
+            // === ACTIVE CLIENT INFO (varies by user type) ===
+            // For Instructors: Shows dropdown to select active client
+            // For Individual Users: Shows their profile info (name, age, sex)
+
             if (_currentUser.IsInstructor)
             {
+                // === INSTRUCTOR: CLIENT SELECTOR ===
+                // Label: "Active Client:"
                 lblActiveClient = new Label
                 {
                     Text = "Active Client:",
                     ForeColor = Color.FromArgb(148, 163, 184),
                     Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
                     AutoSize = true,
+                    MaximumSize = new Size(150, 0), // Constrain width
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
                     Location = new Point(this.ClientSize.Width - 400, 38)
                 };
                 pnlTopBar.Controls.Add(lblActiveClient);
 
+                // Dropdown to select which client to manage
                 cmbClientPicker = new ComboBox
                 {
                     Width = 190,
@@ -259,19 +295,27 @@ namespace VitalCheck.Views
             }
             else
             {
+                // === INDIVIDUAL USER: PROFILE INFO ===
+                // Displays user's profile info or "Profile: Ready" if no profile yet
+                // Format: "Profile: [Full Name] (Age: [Age], [Sex])"
+
                 lblActiveClient = new Label
                 {
                     Text = _activeClient != null ? $"Profile: {_activeClient.FullName} (Age: {_activeClient.Age}, {_activeClient.Sex})" : "Profile: Ready",
-                    ForeColor = Color.FromArgb(13, 148, 136), // Teal
+                    ForeColor = Color.FromArgb(13, 148, 136), // Teal accent
                     Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                     AutoSize = true,
+                    MaximumSize = new Size(280, 0), // Constrain width to prevent text clipping
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
                     Location = new Point(this.ClientSize.Width - 400, 38)
                 };
                 pnlTopBar.Controls.Add(lblActiveClient);
             }
 
-            // Adjust positions when form is resized
+            // === RESPONSIVE LAYOUT ===
+            // Adjust position of right-side controls when form is resized
+            // Ensures controls stay right-aligned and don't overlap as window shrinks
+
             this.Resize += (s, e) => {
                 btnLogout.Location = new Point(pnlTopBar.Width - 110, 19);
                 lblUserInfo.Location = new Point(pnlTopBar.Width - 400, 15);
