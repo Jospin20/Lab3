@@ -55,7 +55,8 @@ namespace VitalCheck.Views
 
         private void InitializeComponent()
         {
-            // Form setup
+            // === FORM SETUP ===
+            // Configure the login form: fixed dialog, center screen, light background
             this.Text = "VitalCheck - Login";
             this.ClientSize = new Size(480, 520);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -64,39 +65,50 @@ namespace VitalCheck.Views
             this.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
             this.BackColor = Color.FromArgb(245, 247, 250);
 
-            // 1. App Title and Subtitle at top
+            // === HEADER: APP TITLE AND SUBTITLE ===
+            // Display the application branding at the top with teal color scheme
+
+            // Main title - large, bold, teal
             lblAppTitle = new Label
             {
                 Text = "VitalCheck",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(13, 148, 136), // Teal
+                ForeColor = Color.FromArgb(13, 148, 136), // Teal accent
                 Location = new Point(25, 18),
                 AutoSize = true
             };
 
+            // Subtitle - descriptive text with proper width constraint to prevent clipping
             lblAppSubtitle = new Label
             {
                 Text = "Health & Fitness Diagnostic System",
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(100, 116, 139), // Slate gray
                 Location = new Point(27, 52),
+                MaximumSize = new Size(430, 0), // Allow text wrapping with fixed width
                 AutoSize = true
             };
 
             this.Controls.Add(lblAppTitle);
             this.Controls.Add(lblAppSubtitle);
 
-            // 2. TabControl for switching between Sign In and Register
+            // === AUTHENTICATION TABS ===
+            // Tab control to switch between Sign In and Register experiences
+            // Tab 1: Existing users sign in
+            // Tab 2: New users create an account
+
             tabAuth = new TabControl
             {
                 Location = new Point(25, 85),
                 Size = new Size(430, 410)
             };
 
+            // "Sign In" tab - for returning users
             tabSignIn = new TabPage("Sign In");
             tabSignIn.BackColor = Color.White;
             tabSignIn.Padding = new Padding(15);
 
+            // "Register Account" tab - for new users
             tabRegister = new TabPage("Register Account");
             tabRegister.BackColor = Color.White;
             tabRegister.Padding = new Padding(15);
@@ -114,6 +126,9 @@ namespace VitalCheck.Views
         /// </summary>
         private void BuildSignInTab()
         {
+            // === SIGN IN FORM CONTAINER ===
+            // GroupBox to organize login fields and button
+
             grpSignIn = new GroupBox
             {
                 Text = " User Login ",
@@ -123,16 +138,19 @@ namespace VitalCheck.Views
                 ForeColor = Color.FromArgb(30, 41, 59)
             };
 
-            // Email Field
+            // === EMAIL FIELD ===
+            // Label for email input with proper sizing to prevent text clipping
             lblLoginEmail = new Label
             {
                 Text = "Email Address:",
                 Location = new Point(20, 35),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Constrain width, allow height to auto-fit
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
 
+            // Email textbox with placeholder
             txtLoginEmail = new TextBox
             {
                 Location = new Point(20, 58),
@@ -141,32 +159,38 @@ namespace VitalCheck.Views
                 PlaceholderText = "name@example.com"
             };
 
-            // Password Field
+            // === PASSWORD FIELD ===
+            // Label for password input
             lblLoginPassword = new Label
             {
                 Text = "Password:",
                 Location = new Point(20, 100),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Constrain width
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
 
+            // Password textbox with masked characters
             txtLoginPassword = new TextBox
             {
                 Location = new Point(20, 123),
                 Width = 350,
                 Font = new Font("Segoe UI", 10F),
-                PasswordChar = '•'
+                PasswordChar = '•' // Masked for security
             };
+            // Allow Enter key to submit the login form
             txtLoginPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) BtnLoginSubmit_Click(s, e); };
 
-            // Sign In Button
+
+            // === SIGN IN BUTTON ===
+            // Large, prominent teal button to submit login credentials
             btnLoginSubmit = new Button
             {
                 Text = "Sign In",
                 Location = new Point(20, 180),
                 Size = new Size(350, 40),
-                BackColor = Color.FromArgb(13, 148, 136),
+                BackColor = Color.FromArgb(13, 148, 136), // Teal accent
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
@@ -175,12 +199,14 @@ namespace VitalCheck.Views
             btnLoginSubmit.FlatAppearance.BorderSize = 0;
             btnLoginSubmit.Click += BtnLoginSubmit_Click;
 
-            // Status / Error message
+            // === STATUS MESSAGE AREA ===
+            // Displays error messages or status feedback to the user
+            // Uses red text for errors, centered alignment
             lblLoginStatus = new Label
             {
                 Location = new Point(20, 235),
                 Size = new Size(350, 60),
-                ForeColor = Color.FromArgb(220, 38, 38), // Red
+                ForeColor = Color.FromArgb(220, 38, 38), // Red for errors
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 TextAlign = ContentAlignment.TopCenter,
                 Text = ""
@@ -201,6 +227,9 @@ namespace VitalCheck.Views
         /// </summary>
         private void BuildRegisterTab()
         {
+            // === REGISTRATION FORM CONTAINER ===
+            // GroupBox to organize registration fields and button
+
             grpRegister = new GroupBox
             {
                 Text = " Create New Account ",
@@ -210,14 +239,17 @@ namespace VitalCheck.Views
                 ForeColor = Color.FromArgb(30, 41, 59)
             };
 
+            // Track vertical position for dynamic field layout
             int curY = 30;
 
-            // Full Name
+            // === FULL NAME FIELD ===
+            // User's full name for account identification
             lblRegFullName = new Label
             {
                 Text = "Full Name:",
                 Location = new Point(20, curY),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Prevent text clipping
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
@@ -228,13 +260,15 @@ namespace VitalCheck.Views
                 Font = new Font("Segoe UI", 9.5F)
             };
 
-            // Email
-            curY += 52;
+            // === EMAIL FIELD ===
+            // Move down and add email input field
+            curY += 52; // Space for label and textbox
             lblRegEmail = new Label
             {
                 Text = "Email Address:",
                 Location = new Point(20, curY),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Prevent text clipping
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
@@ -245,13 +279,15 @@ namespace VitalCheck.Views
                 Font = new Font("Segoe UI", 9.5F)
             };
 
-            // Password
-            curY += 52;
+            // === PASSWORD FIELD ===
+            // Secure password input (minimum 6 characters required)
+            curY += 52; // Move down for next field
             lblRegPassword = new Label
             {
                 Text = "Password (minimum 6 characters):",
                 Location = new Point(20, curY),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Prevent text clipping
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
@@ -260,16 +296,18 @@ namespace VitalCheck.Views
                 Location = new Point(20, curY + 20),
                 Width = 350,
                 Font = new Font("Segoe UI", 9.5F),
-                PasswordChar = '•'
+                PasswordChar = '•' // Masked for security
             };
 
-            // Role
-            curY += 52;
+            // === ROLE SELECTION ===
+            // User selects between Individual User or Fitness Instructor roles
+            curY += 52; // Move down for next field
             lblRegRole = new Label
             {
                 Text = "Account Role:",
                 Location = new Point(20, curY),
                 AutoSize = true,
+                MaximumSize = new Size(350, 0), // Prevent text clipping
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(51, 65, 85)
             };
@@ -281,16 +319,18 @@ namespace VitalCheck.Views
                 Font = new Font("Segoe UI", 9.5F)
             };
             cmbRegRole.Items.AddRange(new object[] { "Individual User", "Fitness Instructor" });
-            cmbRegRole.SelectedIndex = 0;
+            cmbRegRole.SelectedIndex = 0; // Default to Individual User
 
-            // Submit Button
-            curY += 56;
+
+            // === CREATE ACCOUNT BUTTON ===
+            // Large, prominent teal button to submit registration
+            curY += 56; // Move down for button
             btnRegisterSubmit = new Button
             {
                 Text = "Create Account",
                 Location = new Point(20, curY),
                 Size = new Size(350, 38),
-                BackColor = Color.FromArgb(13, 148, 136),
+                BackColor = Color.FromArgb(13, 148, 136), // Teal accent
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
@@ -299,13 +339,14 @@ namespace VitalCheck.Views
             btnRegisterSubmit.FlatAppearance.BorderSize = 0;
             btnRegisterSubmit.Click += BtnRegisterSubmit_Click;
 
-            // Status Label
-            curY += 44;
+            // === STATUS MESSAGE AREA ===
+            // Displays success or error messages after registration attempt
+            curY += 44; // Move down for status label
             lblRegStatus = new Label
             {
                 Location = new Point(20, curY),
                 Size = new Size(350, 30),
-                ForeColor = Color.FromArgb(220, 38, 38),
+                ForeColor = Color.FromArgb(220, 38, 38), // Red for errors
                 Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
                 TextAlign = ContentAlignment.TopCenter,
                 Text = ""
@@ -327,14 +368,19 @@ namespace VitalCheck.Views
 
         /// <summary>
         /// Handles the Sign In button click event.
+        /// Validates user input and attempts to authenticate the user.
         /// </summary>
         private void BtnLoginSubmit_Click(object? sender, EventArgs e)
         {
+            // Clear any previous error messages
             lblLoginStatus.Text = "";
+
+            // Trim whitespace from email input and get password as-is
             string email = txtLoginEmail.Text.Trim();
             string password = txtLoginPassword.Text;
 
-            // Basic validation
+            // === INPUT VALIDATION ===
+            // Check email is provided
             if (string.IsNullOrWhiteSpace(email))
             {
                 lblLoginStatus.Text = "Please enter your email address.";
@@ -342,6 +388,7 @@ namespace VitalCheck.Views
                 return;
             }
 
+            // Check password is provided
             if (string.IsNullOrWhiteSpace(password))
             {
                 lblLoginStatus.Text = "Please enter your password.";
@@ -349,42 +396,54 @@ namespace VitalCheck.Views
                 return;
             }
 
-            // Attempt login via controller
+            // === AUTHENTICATION ===
+            // Call controller to validate credentials against database
             bool success = _userController.Login(email, password, out User? user, out string errorMessage);
 
+            // === LOGIN SUCCESS ===
             if (success && user != null)
             {
-                // Clear fields
+                // Clear sensitive password field
                 txtLoginPassword.Clear();
                 lblLoginStatus.Text = "";
 
-                // Open Main Dashboard
+                // Hide login form and show main dashboard
                 this.Hide();
                 MainDashboardForm dashboard = new MainDashboardForm(user);
+
+                // When dashboard closes, return to login and clear password
                 dashboard.FormClosed += (s, args) => {
                     this.Show();
                     txtLoginPassword.Clear();
                 };
                 dashboard.Show();
             }
+            // === LOGIN FAILURE ===
             else
             {
+                // Display error message from controller
                 lblLoginStatus.Text = errorMessage;
             }
         }
 
         /// <summary>
         /// Handles the Register button click event.
+        /// Validates input and creates a new user account.
         /// </summary>
         private void BtnRegisterSubmit_Click(object? sender, EventArgs e)
         {
+            // Clear any previous messages
             lblRegStatus.Text = "";
+
+            // Trim whitespace from text inputs, keep password as-is
             string fullName = txtRegFullName.Text.Trim();
             string email = txtRegEmail.Text.Trim();
             string password = txtRegPassword.Text;
+            // Determine role: "Instructor" if index 1, else "Individual"
             string role = cmbRegRole.SelectedIndex == 1 ? "Instructor" : "Individual";
 
-            // Basic validation
+            // === INPUT VALIDATION ===
+            // Validate full name
             if (string.IsNullOrWhiteSpace(fullName))
             {
                 lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
@@ -393,6 +452,7 @@ namespace VitalCheck.Views
                 return;
             }
 
+            // Validate email format (must contain @ and .)
             if (string.IsNullOrWhiteSpace(email) || !email.Contains("@") || !email.Contains("."))
             {
                 lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
@@ -401,6 +461,7 @@ namespace VitalCheck.Views
                 return;
             }
 
+            // Validate password length (minimum 6 characters)
             if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
             {
                 lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
@@ -409,11 +470,14 @@ namespace VitalCheck.Views
                 return;
             }
 
-            // Register via controller
+            // === REGISTRATION ATTEMPT ===
+            // Call controller to create new user account in database
             bool success = _userController.Register(fullName, email, password, role, out string errorMessage);
 
+            // === REGISTRATION SUCCESS ===
             if (success)
             {
+                // Show success message
                 MessageBox.Show(
                     "Account registered successfully!\r\n\r\nYou can now sign in using your email and password.",
                     "Registration Successful",
@@ -421,7 +485,8 @@ namespace VitalCheck.Views
                     MessageBoxIcon.Information
                 );
 
-                // Switch to Sign In tab and pre-fill email
+                // === AUTO-SWITCH TO SIGN IN ===
+                // Pre-fill email and clear all other fields
                 txtLoginEmail.Text = email;
                 txtLoginPassword.Clear();
                 txtRegFullName.Clear();
@@ -429,9 +494,11 @@ namespace VitalCheck.Views
                 txtRegPassword.Clear();
                 lblRegStatus.Text = "";
 
+                // Switch to Sign In tab and focus on password field (email already filled)
                 tabAuth.SelectedTab = tabSignIn;
                 txtLoginPassword.Focus();
             }
+            // === REGISTRATION FAILURE ===
             else
             {
                 lblRegStatus.ForeColor = Color.FromArgb(220, 38, 38);
