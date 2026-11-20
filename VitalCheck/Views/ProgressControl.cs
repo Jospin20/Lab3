@@ -202,7 +202,17 @@ namespace VitalCheck.Views
                 );
             }
 
-            // Compute comparison: compare first checkup with latest checkup
+            // === COMPUTE PROGRESS COMPARISON ===
+            // Compare first (latest) checkup with last (earliest) checkup
+            // Add null/bounds checking to prevent IndexOutOfRangeException
+
+            if (_assessments == null || _assessments.Count == 0)
+            {
+                lblWeightTrend.Text = "No assessment data available.";
+                lblBmiTrend.Text = "Complete an assessment to see progress.";
+                return;
+            }
+
             Assessment latest = _assessments[0];
             Assessment earliest = _assessments[_assessments.Count - 1];
 
@@ -237,10 +247,15 @@ namespace VitalCheck.Views
         {
             if (dgvHistory.SelectedRows.Count > 0)
             {
-                int index = dgvHistory.SelectedRows[0].Index;
-                if (index >= 0 && index < _assessments.Count)
+                // === SAFELY ACCESS ASSESSMENT DATA ===
+                // Add null check and bounds validation before accessing array
+                if (_assessments != null && _assessments.Count > 0)
                 {
-                    txtStoredFeedback.Text = _assessments[index].Feedback;
+                    int index = dgvHistory.SelectedRows[0].Index;
+                    if (index >= 0 && index < _assessments.Count)
+                    {
+                        txtStoredFeedback.Text = _assessments[index].Feedback;
+                    }
                 }
             }
         }

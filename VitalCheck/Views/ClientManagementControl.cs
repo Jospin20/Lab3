@@ -195,7 +195,7 @@ namespace VitalCheck.Views
             };
 
             int formY = 30;
-            int step = 60;
+            int step = 66; // Generous vertical spacing to prevent crowding on high-DPI
 
             lblName = new Label { Text = "Client Full Name:", Location = new Point(15, formY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(51, 65, 85) };
             txtFullName = new TextBox { Location = new Point(15, formY + 20), Width = 295, Font = new Font("Segoe UI", 9.5F) };
@@ -300,29 +300,46 @@ namespace VitalCheck.Views
         {
             if (dgvClients.SelectedRows.Count > 0)
             {
-                int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
-                ClientProfile? client = _clients.Find(c => c.ClientID == clientId);
-
-                if (client != null)
+                // === SAFELY EXTRACT CLIENT ID ===
+                // Wrap Convert.ToInt32 in try-catch to handle invalid data
+                try
                 {
-                    _editingClientId = client.ClientID;
-                    txtFullName.Text = client.FullName;
-                    numAge.Value = Math.Clamp(client.Age, numAge.Minimum, numAge.Maximum);
-                    numHeight.Value = Math.Clamp(client.Height, numHeight.Minimum, numHeight.Maximum);
-                    numWeight.Value = Math.Clamp(client.Weight, numWeight.Minimum, numWeight.Maximum);
+                    int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
+                    ClientProfile? client = _clients.Find(c => c.ClientID == clientId);
 
-                    if (string.Equals(client.Sex, "Female", StringComparison.OrdinalIgnoreCase))
-                        cmbSex.SelectedIndex = 1;
-                    else if (string.Equals(client.Sex, "Other", StringComparison.OrdinalIgnoreCase))
-                        cmbSex.SelectedIndex = 2;
-                    else
-                        cmbSex.SelectedIndex = 0;
+                    if (client != null)
+                    {
+                        _editingClientId = client.ClientID;
+                        txtFullName.Text = client.FullName;
+                        numAge.Value = Math.Clamp(client.Age, numAge.Minimum, numAge.Maximum);
+                                    numHeight.Value = Math.Clamp(client.Height, numHeight.Minimum, numHeight.Maximum);
+                                    numWeight.Value = Math.Clamp(client.Weight, numWeight.Minimum, numWeight.Maximum);
 
-                    btnSave.Text = "Update Client";
-                    lblFormStatus.Text = $"Editing client ID: {client.ClientID}";
-                }
-            }
-        }
+                                    if (string.Equals(client.Sex, "Female", StringComparison.OrdinalIgnoreCase))
+                                        cmbSex.SelectedIndex = 1;
+                                    else if (string.Equals(client.Sex, "Other", StringComparison.OrdinalIgnoreCase))
+                                        cmbSex.SelectedIndex = 2;
+                                    else
+                                        cmbSex.SelectedIndex = 0;
+
+                                    btnSave.Text = "Update Client";
+                                    lblFormStatus.Text = $"Editing client ID: {client.ClientID}";
+                                }
+                            }
+                            catch (FormatException)
+                            {
+                                MessageBox.Show("Invalid Client ID format. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            catch (OverflowException)
+                            {
+                                MessageBox.Show("Client ID value is too large. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Error loading client data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                        }
+                    }
 
         private void ResetForm()
         {
@@ -419,13 +436,30 @@ namespace VitalCheck.Views
                 return;
             }
 
-            int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
-            ClientProfile? client = _clients.Find(c => c.ClientID == clientId);
-
-            if (client != null)
+            // === SAFELY EXTRACT CLIENT ID ===
+            // Wrap Convert.ToInt32 in try-catch to handle invalid data
+            try
             {
-                OnActiveClientChanged?.Invoke(client);
-                MessageBox.Show($"Active subject switched to: {client.FullName}", "Active Client Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
+                ClientProfile? client = _clients.Find(c => c.ClientID == clientId);
+
+                if (client != null)
+                {
+                    OnActiveClientChanged?.Invoke(client);
+                    MessageBox.Show($"Active subject switched to: {client.FullName}", "Active Client Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Invalid Client ID format. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("Client ID value is too large. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error setting active client: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -442,25 +476,42 @@ namespace VitalCheck.Views
                 return;
             }
 
-            int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
-            DialogResult confirm = MessageBox.Show(
-                "Are you sure you want to delete this client and their associated assessments?",
-                "Confirm Delete",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (confirm != DialogResult.Yes) return;
-
-            bool success = _clientController.DeleteClient(clientId, out string err);
-            if (success)
+            // === SAFELY EXTRACT CLIENT ID ===
+            // Wrap Convert.ToInt32 in try-catch to handle invalid data
+            try
             {
-                LoadClients();
-                ResetForm();
+                int clientId = Convert.ToInt32(dgvClients.SelectedRows[0].Cells["ClientID"].Value);
+                DialogResult confirm = MessageBox.Show(
+                    "Are you sure you want to delete this client and their associated assessments?",
+                    "Confirm Delete",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (confirm != DialogResult.Yes) return;
+
+                bool success = _clientController.DeleteClient(clientId, out string err);
+                if (success)
+                {
+                    LoadClients();
+                    ResetForm();
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to delete client: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (FormatException)
             {
-                MessageBox.Show($"Failed to delete client: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Invalid Client ID format. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("Client ID value is too large. Please select a valid client.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting client: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

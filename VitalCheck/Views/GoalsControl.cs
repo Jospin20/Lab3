@@ -370,17 +370,34 @@ namespace VitalCheck.Views
                 return;
             }
 
-            int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
-            decimal newValue = numUpdateProgress.Value;
+            // === SAFELY EXTRACT GOAL ID ===
+            // Wrap Convert.ToInt32 in try-catch to handle invalid data
+            try
+            {
+                int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
+                decimal newValue = numUpdateProgress.Value;
 
-            bool success = _goalController.UpdateGoalProgress(goalId, newValue, "In Progress", out string err);
-            if (success)
-            {
-                LoadGoals();
+                bool success = _goalController.UpdateGoalProgress(goalId, newValue, "In Progress", out string err);
+                if (success)
+                {
+                    LoadGoals();
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to update progress: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (FormatException)
             {
-                MessageBox.Show($"Failed to update progress: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Invalid Goal ID format. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("Goal ID value is too large. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error extracting goal ID: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -392,15 +409,32 @@ namespace VitalCheck.Views
                 return;
             }
 
-            int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
-            bool success = _goalController.MarkGoalCompleted(goalId, out string err);
-            if (success)
+            // === SAFELY EXTRACT GOAL ID ===
+            // Wrap Convert.ToInt32 in try-catch to handle invalid data
+            try
             {
-                LoadGoals();
+                int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
+                bool success = _goalController.MarkGoalCompleted(goalId, out string err);
+                if (success)
+                {
+                    LoadGoals();
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to complete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (FormatException)
             {
-                MessageBox.Show($"Failed to complete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Invalid Goal ID format. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("Goal ID value is too large. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error extracting goal ID: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -415,15 +449,32 @@ namespace VitalCheck.Views
             DialogResult confirm = MessageBox.Show("Are you sure you want to delete this fitness goal?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
-            int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
-            bool success = _goalController.DeleteGoal(goalId, out string err);
-            if (success)
+            // === SAFELY EXTRACT GOAL ID ===
+            // Wrap Convert.ToInt32 in try-catch to handle invalid data
+            try
             {
-                LoadGoals();
+                int goalId = Convert.ToInt32(dgvGoals.SelectedRows[0].Cells["GoalID"].Value);
+                bool success = _goalController.DeleteGoal(goalId, out string err);
+                if (success)
+                {
+                    LoadGoals();
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to delete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (FormatException)
             {
-                MessageBox.Show($"Failed to delete goal: {err}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Invalid Goal ID format. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("Goal ID value is too large. Please select a valid goal.", "Invalid Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error extracting goal ID: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
